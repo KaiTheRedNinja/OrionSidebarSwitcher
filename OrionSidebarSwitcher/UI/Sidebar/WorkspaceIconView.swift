@@ -53,13 +53,13 @@ class WorkspaceIconView: NSView {
 
         // constrain their frames to be equal to this view's
         NSLayoutConstraint.activate([
-            iconView.topAnchor.constraint(equalTo: self.topAnchor),
-            iconView.leftAnchor.constraint(equalTo: self.leftAnchor),
+            iconView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             iconView.heightAnchor.constraint(equalTo: self.heightAnchor),
             iconView.widthAnchor.constraint(equalTo: self.widthAnchor),
 
-            dotView.topAnchor.constraint(equalTo: self.topAnchor),
-            dotView.leftAnchor.constraint(equalTo: self.leftAnchor),
+            dotView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            dotView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             dotView.heightAnchor.constraint(equalTo: self.heightAnchor),
             dotView.widthAnchor.constraint(equalTo: self.widthAnchor)
         ])
