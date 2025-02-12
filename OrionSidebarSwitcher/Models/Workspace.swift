@@ -20,20 +20,24 @@ class Workspace: Identifiable {
     var pinnedTabs: [TabItem]
     /// The unpinned/regular tabs of this workspace
     var regularTabs: [TabItem]
+    /// The ID of the selected tab
+    var selectedTabId: TabItem.ID?
 
-    /// Creates a workspace from its name, icon, pinned and unpinned tabs
+    /// Creates a workspace from its name, icon, pinned/unpinned tabs, and selected tab ID
     init(
         id: UUID = .init(),
         name: String,
         icon: NSImage,
         pinnedTabs: [TabItem],
-        regularTabs: [TabItem]
+        regularTabs: [TabItem],
+        selectedTabID: TabItem.ID?
     ) {
         self.id = id
         self.name = name
         self.icon = icon
         self.pinnedTabs = pinnedTabs
         self.regularTabs = regularTabs
+        self.selectedTabId = selectedTabID
     }
 
     /// A factory method which creates a "Blank Workspace" workspace, which contains one
@@ -45,7 +49,8 @@ class Workspace: Identifiable {
             name: "Blank Workspace",
             icon: defaultIcon,
             pinnedTabs: [.untitledTab()],
-            regularTabs: (0..<3).map { _ in .untitledTab() }
+            regularTabs: (0..<3).map { _ in .untitledTab() },
+            selectedTabID: nil
         )
     }
 
