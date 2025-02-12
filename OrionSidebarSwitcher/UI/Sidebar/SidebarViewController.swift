@@ -12,15 +12,15 @@ class SidebarViewController: NSViewController {
     weak var wsGroupManager: WorkspaceGroupManager!
 
     /// The view for the workspace switcher view
-    var workspaceSwitcherView: NSView!
+    var workspaceSwitcherView: WorkspaceSwitcherView!
     /// The view for the workspaces' content, which contains and aligns several workspace views
-    var workspaceGroupHolderView: NSView!
+    var workspaceGroupHolderView: WorkspaceGroupHolderView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Load and configure the switcher view
-        let switcherView = NSView()
+        let switcherView = WorkspaceSwitcherView()
         switcherView.translatesAutoresizingMaskIntoConstraints = false
         switcherView.wantsLayer = true
         switcherView.layer?.backgroundColor = .init(red: 1, green: 0, blue: 0, alpha: 1)
@@ -28,7 +28,7 @@ class SidebarViewController: NSViewController {
         view.addSubview(switcherView)
 
         // Load and configure the holder view
-        let holderView = NSView()
+        let holderView = WorkspaceGroupHolderView()
         holderView.translatesAutoresizingMaskIntoConstraints = false
         holderView.wantsLayer = true
         holderView.layer?.backgroundColor = .init(red: 0, green: 0, blue: 1, alpha: 1)
