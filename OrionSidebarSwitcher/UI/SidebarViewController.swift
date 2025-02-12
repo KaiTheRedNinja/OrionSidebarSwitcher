@@ -16,4 +16,8 @@ class SidebarViewController: NSViewController {
 
         print("Sidebar view controller loaded")
     }
+
+    /// Sets up the sidebar view controller's listeners
+    func setup() {
+    }
 }

@@ -12,9 +12,12 @@ class WorkspaceGroup: Identifiable, ObservableObject {
     /// A unique identifier for the workspace group
     let id: UUID
 
-    /// The workspaces within the group
+    /// The workspaces within the group. This must have at least ONE workspace,
+    /// having zero workspaces is considered invalid state.
     @Published var workspaces: [Workspace]
-    /// The ID of the currently focused workspace
+    /// The ID of the currently focused workspace. This must correspond with EXACTLY ONE
+    /// workspace in ``workspaces``, corresponding with zero or multiple is considered
+    /// invalid state
     @Published var focusedWorkspaceID: Workspace.ID
 
     init(

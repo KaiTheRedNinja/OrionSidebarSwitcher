@@ -54,6 +54,11 @@ class MainWindowController: NSWindowController {
         self.wsGroupManager = wsgManager
         self.sidebarViewController.wsGroupManager = wsgManager
         self.pageViewController.wsGroupManager = wsgManager
+
+        // Inform the sidebar and page view contollers to set up, now that the workspace group manager
+        // has been passed to them
+        self.sidebarViewController.setup()
+        self.pageViewController.setup()
     }
 
     @objc

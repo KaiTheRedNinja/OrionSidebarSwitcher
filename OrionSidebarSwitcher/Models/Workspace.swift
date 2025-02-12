@@ -18,10 +18,16 @@ class Workspace: Identifiable, ObservableObject {
     @Published var icon: NSImage
     /// The pinned tabs of this workspace
     @Published var pinnedTabs: [TabItem]
-    /// The unpinned/regular tabs of this workspace
+    /// The unpinned/regular tabs of this workspace. There must be at least ONE regular tab,
+    /// having zero regular tabs is considered invalid state.
     @Published var regularTabs: [TabItem]
-    /// The ID of the selected tab
-    @Published var selectedTabId: TabItem.ID?
+    /// The ID of the selected tab. This must correspond with EXACTLY ONE tab in either
+    /// ``pinnedTabs`` or ``regularTabs``, corresponding with zero or multiple is considered
+    /// invalid state
+    @Published var selectedTabId: TabItem.ID
+
+    /// A computed property for all tabs within this workspace. Pinned tabs are first, followed by regular tabs.
+    var allTabs: [TabItem] { pinnedTabs + regularTabs }
 
     /// Creates a workspace from its name, icon, pinned/unpinned tabs, and selected tab ID
     init(
@@ -30,7 +36,7 @@ class Workspace: Identifiable, ObservableObject {
         icon: NSImage,
         pinnedTabs: [TabItem],
         regularTabs: [TabItem],
-        selectedTabID: TabItem.ID?
+        selectedTabID: TabItem.ID
     ) {
         self.id = id
         self.name = name
@@ -41,16 +47,18 @@ class Workspace: Identifiable, ObservableObject {
     }
 
     /// A factory method which creates a "Blank Workspace" workspace, which contains one
-    /// untitled pinned tab and three untitled regular tabs. Calling this function repeatedly
-    /// will produce `Workspace`s with identical `name`s, `icon`s, and tab detauls, but
-    /// different `id`s and tab `id`s.
+    /// untitled pinned tab and three untitled regular tabs, with the first unpinned tab selected.
+    /// Calling this function repeatedly will produce `Workspace`s with identical `name`s,
+    /// `icon`s, and tab detauls, but different `id`s and tab `id`s.
     static func blankWorkspace() -> Workspace {
-        .init(
+        let regularTabs = (0..<3).map { _ in TabItem.untitledTab() }
+
+        return .init(
             name: "Blank Workspace",
             icon: defaultIcon,
             pinnedTabs: [.untitledTab()],
-            regularTabs: (0..<3).map { _ in .untitledTab() },
-            selectedTabID: nil
+            regularTabs: regularTabs,
+            selectedTabID: regularTabs[0].id
         )
     }
 
