@@ -8,20 +8,20 @@
 import Cocoa
 
 /// An object which holds the data associated with a workspace
-class Workspace: Identifiable {
+class Workspace: Identifiable, ObservableObject {
     /// A unique identifier for the workspace
-    var id: UUID = .init()
+    let id: UUID
 
     /// The name of the workspace
-    var name: String
+    @Published var name: String
     /// The icon for the workspace
-    var icon: NSImage
+    @Published var icon: NSImage
     /// The pinned tabs of this workspace
-    var pinnedTabs: [TabItem]
+    @Published var pinnedTabs: [TabItem]
     /// The unpinned/regular tabs of this workspace
-    var regularTabs: [TabItem]
+    @Published var regularTabs: [TabItem]
     /// The ID of the selected tab
-    var selectedTabId: TabItem.ID?
+    @Published var selectedTabId: TabItem.ID?
 
     /// Creates a workspace from its name, icon, pinned/unpinned tabs, and selected tab ID
     init(

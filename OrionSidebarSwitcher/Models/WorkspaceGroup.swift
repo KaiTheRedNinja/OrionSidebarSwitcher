@@ -8,14 +8,14 @@
 import Foundation
 
 /// An object which holds the data associated with a group of workspaces
-class WorkspaceGroup: Identifiable {
+class WorkspaceGroup: Identifiable, ObservableObject {
     /// A unique identifier for the workspace group
-    var id: UUID = .init()
+    let id: UUID
 
     /// The workspaces within the group
-    var workspaces: [Workspace]
+    @Published var workspaces: [Workspace]
     /// The ID of the currently focused workspace
-    var focusedWorkspaceID: Workspace.ID
+    @Published var focusedWorkspaceID: Workspace.ID
 
     init(
         id: UUID = .init(),

@@ -8,14 +8,14 @@
 import Cocoa
 
 /// An object which holds the data associated with a tab
-class TabItem: Identifiable {
+class TabItem: Identifiable, ObservableObject {
     /// A unique identifier for the tab item
-    var id: UUID = .init()
+    let id: UUID
 
     /// The name of the tab
-    var name: String
+    @Published var name: String
     /// The icon for the tab
-    var icon: NSImage
+    @Published var icon: NSImage
 
     /// Creates a tab item from its name and icon
     init(id: UUID = .init(), name: String, icon: NSImage) {
