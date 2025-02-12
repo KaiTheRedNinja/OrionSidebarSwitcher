@@ -14,6 +14,6 @@ class WorkspaceGroupHolderView: NSView {
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
         wantsLayer = true
-        layer?.backgroundColor = .init(red: 1, green: 0, blue: 0, alpha: 1)
+        layer?.backgroundColor = .init(red: 1, green: 0, blue: 0, alpha: 0.1)
     }
 }
