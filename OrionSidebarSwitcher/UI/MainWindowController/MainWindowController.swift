@@ -32,6 +32,7 @@ class MainWindowController: NSWindowController {
 
         // Set the window's frame to something more browser-like
         window?.setContentSize(.init(width: 900, height: 600))
+        window?.minSize = .init(width: 580, height: 400)
 
         // Get the split view controller
         guard let splitVC = self.contentViewController as? NSSplitViewController,
@@ -43,6 +44,10 @@ class MainWindowController: NSWindowController {
             // we error since we can't recover from this state
             fatalError("Split view incorrectly configured")
         }
+
+        // prevent the sidebar from becoming too wide or thin
+        splitVC.splitViewItems[0].maximumThickness = 350
+        splitVC.splitViewItems[0].minimumThickness = 92
 
         self.splitViewController = splitVC
         self.sidebarViewController = sidebarVC
