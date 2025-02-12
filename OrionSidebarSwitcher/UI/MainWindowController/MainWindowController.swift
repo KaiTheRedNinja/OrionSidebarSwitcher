@@ -15,6 +15,9 @@ class MainWindowController: NSWindowController {
     /// The view controller for the page
     var pageViewController: PageViewController!
 
+    /// The manager for this window's `WorkspaceGroup`
+    var wsGroupManager: WorkspaceGroupManager!
+
     override func windowDidLoad() {
         super.windowDidLoad()
         print("Window loaded!")
@@ -44,6 +47,13 @@ class MainWindowController: NSWindowController {
         self.splitViewController = splitVC
         self.sidebarViewController = sidebarVC
         self.pageViewController = pageVC
+
+        // Set up the workspace group's manager, and provide
+        // references to the sidebar and page view controllers
+        let wsgManager = WorkspaceGroupManager(workspaceGroup: .blankWorkspaceGroup())
+        self.wsGroupManager = wsgManager
+        self.sidebarViewController.wsGroupManager = wsgManager
+        self.pageViewController.wsGroupManager = wsgManager
     }
 
     @objc

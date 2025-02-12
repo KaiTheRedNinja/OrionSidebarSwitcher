@@ -8,6 +8,8 @@
 import Cocoa
 
 class PageViewController: NSViewController {
+    weak var wsGroupManager: WorkspaceGroupManager!
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do view setup here.
