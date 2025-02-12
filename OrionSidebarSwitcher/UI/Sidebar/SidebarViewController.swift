@@ -22,16 +22,12 @@ class SidebarViewController: NSViewController {
         // Load and configure the switcher view
         let switcherView = WorkspaceSwitcherView()
         switcherView.translatesAutoresizingMaskIntoConstraints = false
-        switcherView.wantsLayer = true
-        switcherView.layer?.backgroundColor = .init(red: 1, green: 0, blue: 0, alpha: 1)
         self.workspaceSwitcherView = switcherView
         view.addSubview(switcherView)
 
         // Load and configure the holder view
         let holderView = WorkspaceGroupHolderView()
         holderView.translatesAutoresizingMaskIntoConstraints = false
-        holderView.wantsLayer = true
-        holderView.layer?.backgroundColor = .init(red: 0, green: 0, blue: 1, alpha: 1)
         self.workspaceGroupHolderView = holderView
         view.addSubview(holderView)
 
@@ -55,5 +51,9 @@ class SidebarViewController: NSViewController {
 
     /// Sets up the sidebar view controller's listeners
     func setup() {
+        workspaceSwitcherView.wsGroupManager = wsGroupManager
+        workspaceGroupHolderView.wsGroupManager = wsGroupManager
+        workspaceSwitcherView.setup()
+        workspaceGroupHolderView.setup()
     }
 }
