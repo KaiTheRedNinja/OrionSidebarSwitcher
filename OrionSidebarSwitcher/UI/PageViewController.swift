@@ -9,19 +9,20 @@ import Cocoa
 import Combine
 
 class PageViewController: NSViewController {
+    /// A weak reference to the workspace group manager
     weak var wsGroupManager: WorkspaceGroupManager!
 
     /// The watcher that detects when the focused workspace changes
-    var focusedWorkspaceChangeWatcher: AnyCancellable?
+    private var focusedWorkspaceChangeWatcher: AnyCancellable?
     /// The watcher that detects when the selected tab of the focused workspace changes
-    var selectedTabChangeWatcher: AnyCancellable?
+    private var selectedTabChangeWatcher: AnyCancellable?
     /// The watcher that detects when the selected tab's details change
-    var selectedTabDetailsChangeWatcher: AnyCancellable?
+    private var selectedTabDetailsChangeWatcher: AnyCancellable?
 
     /// The view responsible for showing the primary image
-    var imageView: NSImageView!
+    private var imageView: NSImageView!
     /// The view responsible for showing the primary text
-    var textView: NSTextView!
+    private var textView: NSTextView!
 
     /// A weak reference to the current tab
     weak var currentTab: TabItem?
