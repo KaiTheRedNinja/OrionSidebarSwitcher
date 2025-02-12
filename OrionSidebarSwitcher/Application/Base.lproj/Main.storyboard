@@ -758,10 +758,10 @@
             </objects>
             <point key="canvasLocation" x="-276" y="642"/>
         </scene>
-        <!--Content View Controller-->
+        <!--Page View Controller-->
         <scene sceneID="g06-Qn-pH0">
             <objects>
-                <viewController id="frw-2v-sLq" customClass="ContentViewController" customModule="OrionSidebarSwitcher" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="frw-2v-sLq" customClass="PageViewController" customModule="OrionSidebarSwitcher" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="4e7-mv-4Tt">
                         <rect key="frame" x="0.0" y="0.0" width="302" height="300"/>
                         <autoresizingMask key="autoresizingMask"/>

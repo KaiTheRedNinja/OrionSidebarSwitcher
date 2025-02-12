@@ -8,6 +8,13 @@
 import Cocoa
 
 class MainWindowController: NSWindowController {
+    /// The `NSSplitView`'s controller, at the root of this window
+    var splitViewController: NSSplitViewController!
+    /// The view controller for the sidebar
+    var sidebarViewController: SidebarViewController!
+    /// The view controller for the page
+    var pageViewController: PageViewController!
+
     override func windowDidLoad() {
         super.windowDidLoad()
         print("Window loaded!")
@@ -22,6 +29,21 @@ class MainWindowController: NSWindowController {
 
         // Set the window's frame to something more browser-like
         window?.setContentSize(.init(width: 900, height: 600))
+
+        // Get the split view controller
+        guard let splitVC = self.contentViewController as? NSSplitViewController,
+              splitVC.splitViewItems.count == 2,
+              let sidebarVC = splitVC.splitViewItems[0].viewController as? SidebarViewController,
+              let pageVC = splitVC.splitViewItems[1].viewController as? PageViewController
+        else {
+            // If the content of this window is not a split view controller, or its contents are incorrect,
+            // we error since we can't recover from this state
+            fatalError("Split view incorrectly configured")
+        }
+
+        self.splitViewController = splitVC
+        self.sidebarViewController = sidebarVC
+        self.pageViewController = pageVC
     }
 }
 
