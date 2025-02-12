@@ -14,7 +14,6 @@ class TabItem: Identifiable {
 
     /// The name of the tab
     var name: String
-
     /// The icon for the tab
     var icon: NSImage
 
@@ -30,7 +29,10 @@ class TabItem: Identifiable {
     static func untitledTab() -> TabItem {
         .init(
             name: "Untitled Tab",
-            icon: NSImage(systemSymbolName: "globe", accessibilityDescription: "Tab Icon")!
+            icon: defaultIcon
         )
     }
+
+    /// The default icon for a tab
+    static let defaultIcon: NSImage = NSImage(systemSymbolName: "globe", accessibilityDescription: "Tab Icon")!
 }
