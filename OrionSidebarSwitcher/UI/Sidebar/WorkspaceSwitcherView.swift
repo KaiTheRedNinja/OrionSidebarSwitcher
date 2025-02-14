@@ -59,9 +59,18 @@ class WorkspaceSwitcherView: NSView {
 
     override func layout() {
         super.layout()
+
+        for sublayer in layer?.sublayers ?? [] {
+            switch sublayer.name {
+            case "topBorder": sublayer.frame = CGRect(x: 0, y: bounds.height - 1, width: bounds.width*2, height: 1)
+            case "bottomBorder": sublayer.frame = CGRect(x: 0, y: 0, width: bounds.width*2, height: 1)
+            default:
+                break
+            }
+        }
+
         guard let wsGroupManager else { return }
         updateUIElements(actions: [], workspaces: wsGroupManager.workspaceGroup.workspaces)
-        addSeparators()
     }
 
     /// Adds the separators at the top and bottom of the switcher view
@@ -72,12 +81,15 @@ class WorkspaceSwitcherView: NSView {
         layer?.sublayers?.removeAll()
 
         let topBorder = CALayer()
+        topBorder.name = "topBorder"
         topBorder.backgroundColor = NSColor.separatorColor.cgColor
-        topBorder.frame = CGRect(x: 0, y: bounds.height - 1, width: bounds.width, height: 1)
+        topBorder.frame = CGRect(x: 0, y: bounds.height - 1, width: bounds.width*2, height: 1)
+        // we set its width to double the bounds so that it doesn't "lag behind"
 
         let bottomBorder = CALayer()
+        bottomBorder.name = "bottomBorder"
         bottomBorder.backgroundColor = NSColor.separatorColor.cgColor
-        bottomBorder.frame = CGRect(x: 0, y: 0, width: bounds.width, height: 1)
+        bottomBorder.frame = CGRect(x: 0, y: 0, width: bounds.width*2, height: 1)
 
         layer?.addSublayer(topBorder)
         layer?.addSublayer(bottomBorder)

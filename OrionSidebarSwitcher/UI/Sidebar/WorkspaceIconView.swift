@@ -62,8 +62,8 @@ class WorkspaceIconView: NSView {
         NSLayoutConstraint.activate([
             iconView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             iconView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            iconView.heightAnchor.constraint(equalTo: self.heightAnchor),
-            iconView.widthAnchor.constraint(equalTo: self.widthAnchor),
+            iconView.heightAnchor.constraint(equalToConstant: 21),
+            iconView.widthAnchor.constraint(equalToConstant: 21),
 
             dotView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             dotView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
