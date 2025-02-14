@@ -23,13 +23,13 @@ class WorkspaceIconView: NSView {
     /// The view used to display the view's icon in "expanded" mode
     private var iconView: NSImageView!
     /// The view used to display a dot in "contracted" mode
-    private var dotView: NSTextView!
+    private var dotView: CircleView!
 
     /// The minimum width of a WorkspaceIconView before it enters compact mode
-    static let minimumExpandedWidth: CGFloat = 48
+    static let minimumExpandedWidth: CGFloat = 32
     /// The maximum width of a WorkspaceIconView. This is also the distance between the centers
     /// of two consecutive WorkspaceIconViews
-    static let maximumExpandedWidth: CGFloat = 70
+    static let maximumExpandedWidth: CGFloat = 44
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -42,11 +42,9 @@ class WorkspaceIconView: NSView {
         iconView.wantsLayer = true
         self.addSubview(iconView)
 
-        dotView = NSTextView()
-        dotView.string = "⋅"
-        dotView.alignment = .center
-        dotView.backgroundColor = .clear
-        dotView.font = .systemFont(ofSize: 10, weight: .bold)
+        dotView = CircleView()
+        dotView.circleColor = .gray
+        dotView.circleRadius = 3
         dotView.translatesAutoresizingMaskIntoConstraints = false
         dotView.wantsLayer = true
         self.addSubview(dotView)
@@ -84,16 +82,19 @@ class WorkspaceIconView: NSView {
 
     // MARK: Interaction
     override func mouseEntered(with event: NSEvent) {
+        super.mouseEntered(with: event)
         guard let workspace else { return }
         interactionDelegate?.workspaceIconMouseEntered(workspace.id)
     }
 
     override func mouseExited(with event: NSEvent) {
+        super.mouseExited(with: event)
         guard let workspace else { return }
         interactionDelegate?.workspaceIconMouseExited(workspace.id)
     }
 
     override func mouseDown(with event: NSEvent) {
+        super.mouseDown(with: event)
         guard let workspace else { return }
         interactionDelegate?.workspaceIconMouseClicked(workspace.id)
     }
@@ -136,6 +137,26 @@ class WorkspaceIconView: NSView {
             dotView.layer?.transform = dotViewTransform.0
             dotView.layer?.opacity = dotViewTransform.1
         }
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+
+        // Remove existing tracking areas
+        for trackingArea in trackingAreas {
+            removeTrackingArea(trackingArea)
+        }
+
+        // Define tracking area
+        let trackingArea = NSTrackingArea(
+            rect: self.bounds,
+            options: [.mouseEnteredAndExited, .activeInKeyWindow],
+            owner: self,
+            userInfo: nil
+        )
+
+        // Add tracking area
+        addTrackingArea(trackingArea)
     }
 
     required init?(coder: NSCoder) {

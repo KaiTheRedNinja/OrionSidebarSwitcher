@@ -43,6 +43,7 @@ class PageViewController: NSViewController {
         label.alignment = .center
         label.backgroundColor = .clear
         label.font = .systemFont(ofSize: 20, weight: .bold)
+        label.isEditable = false
         self.textView = label
         view.addSubview(label)
 
