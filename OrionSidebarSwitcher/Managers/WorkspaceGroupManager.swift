@@ -33,6 +33,8 @@ class WorkspaceGroupManager {
         currentTapSubject.send(currentWorkspaceTab())
     }
 
+    // MARK: Getters
+
     /// Retrieves the currently focused workspace
     func currentWorkspace() -> Workspace {
         // Determine the workspace, for which its ID matches the focused workspace ID
@@ -63,6 +65,8 @@ class WorkspaceGroupManager {
         return selectedTab
     }
 
+    // MARK: Setters
+
     /// Focuses the given workspace
     func focus(workspaceWithId workspaceId: Workspace.ID) {
         // update the state
@@ -70,5 +74,21 @@ class WorkspaceGroupManager {
 
         // send out the focused tab publisher
         currentTapSubject.send(currentWorkspaceTab())
+    }
+
+    /// Deletes the given workspace
+    func delete(workspaceWithId workspaceId: Workspace.ID) {
+        // refuse to delete if this is the only workspace left, or if it doesn't exist
+        guard workspaceGroup.workspaces.count > 1,
+              let workspaceIndex = workspaceGroup.workspaces.firstIndex(where: { $0.id == workspaceId })
+        else { return }
+
+        // if this workspace is the selected one, select the next one
+        if workspaceGroup.focusedWorkspaceID == workspaceId {
+            let targetIndex = (workspaceIndex+1)%workspaceGroup.workspaces.count
+            focus(workspaceWithId: workspaceGroup.workspaces[targetIndex].id)
+        }
+
+        workspaceGroup.workspaces.remove(at: workspaceIndex)
     }
 }

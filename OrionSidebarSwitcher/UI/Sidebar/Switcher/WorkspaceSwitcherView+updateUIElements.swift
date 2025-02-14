@@ -86,6 +86,7 @@ extension WorkspaceSwitcherView {
             default: false
             }
         }
+
         updateWorkspaceViews(
             workspacesToRemove: workspacesToRemove,
             workspaceToSelect: workspaceToSelect,
@@ -206,11 +207,14 @@ extension WorkspaceSwitcherView {
             let workspaceId = workspaceIconView.workspace.id
 
             // If it is to be removed: Animate its frame changing to 0, then remove it
-            if workspacesToRemove.contains(workspaceId) {
+            guard !workspacesToRemove.contains(workspaceId) else {
                 // TODO: animate the view to zero
                 workspaceIconView.removeFromSuperview()
-                return
+                continue
             }
+
+            // If it doesn't have a frame: It is in the process of being removed, ignore it
+            guard let frame = workspaceIconPositions[workspaceId] else { continue }
 
             // Determine how to render it
             let targetRenderingStyle: WorkspaceIconRenderingStyle = if workspaceToSelect == workspaceId {
@@ -226,10 +230,10 @@ extension WorkspaceSwitcherView {
                 NSAnimationContext.runAnimationGroup { context in
                     context.duration = 0.3
                     context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                    workspaceIconView.animator().frame = workspaceIconPositions[workspaceId]!
+                    workspaceIconView.animator().frame = frame
                 }
             } else {
-                workspaceIconView.frame = workspaceIconPositions[workspaceId]!
+                workspaceIconView.frame = frame
             }
 
             workspaceIconView.layout(renderingStyleChangedTo: targetRenderingStyle)

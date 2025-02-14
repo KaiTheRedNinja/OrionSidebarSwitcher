@@ -90,10 +90,26 @@ class WorkspaceIconView: NSView {
         interactionDelegate?.workspaceIconMouseExited(workspace.id)
     }
 
-    override func mouseDown(with event: NSEvent) {
-        super.mouseDown(with: event)
+    override func mouseUp(with event: NSEvent) {
+        super.mouseUp(with: event)
         guard let workspace else { return }
         interactionDelegate?.workspaceIconMouseClicked(workspace.id)
+    }
+
+    override func rightMouseUp(with event: NSEvent) {
+        let menu = NSMenu()
+        let deleteItem = NSMenuItem()
+        deleteItem.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "trash")
+        deleteItem.title = "Delete"
+        deleteItem.action = #selector(deleteWorkspace)
+        deleteItem.target = self
+        menu.items.append(deleteItem)
+        menu.popUp(positioning: nil, at: .zero, in: self)
+    }
+
+    @objc
+    func deleteWorkspace() {
+        interactionDelegate?.workspaceDeleteRequested(workspace.id)
     }
 
     // MARK: Layout
@@ -180,6 +196,8 @@ protocol WorkspaceIconInteractionDelegate: AnyObject {
     func workspaceIconMouseExited(_ workspaceId: Workspace.ID)
     /// The mouse has clicked on the workspace icon
     func workspaceIconMouseClicked(_ workspaceId: Workspace.ID)
+    /// The user has requested to delete the workspace
+    func workspaceDeleteRequested(_ workspaceId: Workspace.ID)
 }
 
 /// How the workspace icon is rendered

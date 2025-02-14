@@ -122,6 +122,15 @@ extension WorkspaceSwitcherView: WorkspaceIconInteractionDelegate {
             workspaces: wsGroupManager.workspaceGroup.workspaces
         )
     }
+
+    func workspaceDeleteRequested(_ workspaceId: Workspace.ID) {
+        guard let wsGroupManager else { return }
+        wsGroupManager.delete(workspaceWithId: workspaceId)
+        updateUIElements(
+            actions: [.workspaceRemoved(workspaceId)],
+            workspaces: wsGroupManager.workspaceGroup.workspaces
+        )
+    }
 }
 
 /// An object that tracks the state of the workspace switcher's UI
