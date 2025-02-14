@@ -60,32 +60,79 @@ extension WorkspaceSwitcherView {
         let workspaces = wsGroupManager.workspaceGroup.workspaces
 
         // --- 1. Determine whether the sidebar is full enough to warrant switching to compact mode ---
-
-        // get the minimum width that the workspaces need if they're all in expanded mode
-        let minimumExpandedWidth = CGFloat(workspaces.count) * WorkspaceIconView.minimumExpandedWidth
-        // if the minimum width is less than the available width, then the sidebar will switch to compact mode.
-        let shouldBeCompact = minimumExpandedWidth < self.frame.width
+        let shouldBeCompact = shouldBeCompactGiven(
+            workspaceCount: workspaces.count,
+            minimumExpandedWidth: WorkspaceIconView.minimumExpandedWidth,
+            availableWidth: self.frame.width
+        )
 
         // --- 2. For each workspace that still exists, calculate its new size/position within the sidebar ---
+        let workspaceIconPositions = workspaceIconPositionsGiven(
+            workspaces: workspaces,
+            maximumExpandedWidth: WorkspaceIconView.maximumExpandedWidth
+        )
 
+        // --- 3. Execute the actions ---
+        let (workspaceToHover, workspaceToSelect, workspacesToRemove) = executeActions(
+            workspaceIconPositions: workspaceIconPositions,
+            hoveredWorkspaceId: uiState.hoveredWorkspaceId,
+            selectedWorkspaceItem: uiState.selectedWorkspaceItem,
+            actions: actions
+        )
+
+        // --- 4. Update each workspace view ---
+        updateWorkspaceViews(
+            workspacesToRemove: workspacesToRemove,
+            workspaceToSelect: workspaceToSelect,
+            workspaceToHover: workspaceToHover,
+            shouldBeCompact: shouldBeCompact,
+            workspaceIconPositions: workspaceIconPositions
+        )
+
+        // --- 5. If the selected item has changed, animate it shrinking then expanding back to normal size ---
+        // TODO: indicator for selected item changing
+
+        // --- 6. Update UI State
+        self.uiState = .init(
+            isCompact: shouldBeCompact,
+            hoveredWorkspaceId: workspaceToHover,
+            selectedWorkspaceItem: workspaceToSelect
+        )
+    }
+
+    private func shouldBeCompactGiven(
+        workspaceCount: Int,
+        minimumExpandedWidth: CGFloat,
+        availableWidth: CGFloat
+    ) -> Bool {
+        // get the minimum width that the workspaces need if they're all in expanded mode
+        let minimumTotalWidth = CGFloat(workspaceCount) * minimumExpandedWidth
+        // if the minimum width is less than the available width, then the sidebar will switch to compact mode.
+        return minimumTotalWidth < availableWidth
+    }
+
+    private func workspaceIconPositionsGiven(
+        workspaces: [Workspace],
+        maximumExpandedWidth: CGFloat
+    ) -> [Workspace.ID: CGRect] {
         // get the maximum width that all the workspaces can take up if they're all in expanded mode
-        let maximumExpandedWidth = CGFloat(workspaces.count) * WorkspaceIconView.maximumExpandedWidth
+        let maximumTotalWidth = CGFloat(workspaces.count) * maximumExpandedWidth
         // if the maximum width is smaller than the available width, we need to set the starting value a bit further
         // so that the icons are centered. If not, then they can start at the very left of the view.
-        let startingX: CGFloat = if maximumExpandedWidth < self.frame.width {
-            (self.frame.width - maximumExpandedWidth) / 2
+        let startingX: CGFloat = if maximumTotalWidth < self.frame.width {
+            (self.frame.width - maximumTotalWidth) / 2
         } else {
             0
         }
         let widthPerIcon: CGFloat = min(
-            WorkspaceIconView.maximumExpandedWidth,
+            maximumExpandedWidth,
             self.frame.width / CGFloat(workspaces.count)
         )
 
         // determine the width of each icon, given that they all take up the same width
         var workspaceIconPositions: [Workspace.ID: CGRect] = [:]
         var currentX = startingX
-        for (index, workspace) in workspaces.enumerated() {
+        for workspace in workspaces {
             workspaceIconPositions[workspace.id] = .init(
                 x: currentX,
                 y: 0,
@@ -95,10 +142,21 @@ extension WorkspaceSwitcherView {
             currentX += widthPerIcon
         }
 
-        // --- 3. Execute the actions ---
+        return workspaceIconPositions
+    }
 
-        var workspaceToHover: Workspace.ID?
-        var workspaceToSelect: Workspace.ID = uiState.selectedWorkspaceItem // set to the current workspace
+    private func executeActions(
+        workspaceIconPositions: [Workspace.ID: CGRect],
+        hoveredWorkspaceId: Workspace.ID?,
+        selectedWorkspaceItem: Workspace.ID,
+        actions: [WorkspaceSwitcherAction]
+    ) -> (
+        workspaceToHover: Workspace.ID?,
+        workspaceToSelect: Workspace.ID,
+        workspacesToRemove: Set<Workspace.ID>
+    ) {
+        var workspaceToHover: Workspace.ID? = hoveredWorkspaceId
+        var workspaceToSelect: Workspace.ID = selectedWorkspaceItem
         var workspacesToRemove: Set<Workspace.ID> = []
 
         for action in actions {
@@ -122,10 +180,20 @@ extension WorkspaceSwitcherView {
                 iconView.setup()
                 iconView.interactionDelegate = self
                 iconView.frame = .init(x: targetFrame.midX, y: targetFrame.midY, width: 0, height: 0)
+                self.addSubview(iconView)
             }
         }
 
-        // --- 4. Update each workspace view ---
+        return (workspaceToHover, workspaceToSelect, workspacesToRemove)
+    }
+
+    fileprivate func updateWorkspaceViews(
+        workspacesToRemove: Set<Workspace.ID>,
+        workspaceToSelect: Workspace.ID,
+        workspaceToHover: Workspace.ID?,
+        shouldBeCompact: Bool,
+        workspaceIconPositions: [Workspace.ID: CGRect]
+    ) {
         for workspaceIconView in self.workspaceIconViews {
             let workspaceId = workspaceIconView.workspace.id
 
@@ -152,15 +220,5 @@ extension WorkspaceSwitcherView {
                 workspaceIconView.layout(renderingStyleChangedTo: targetRenderingStyle)
             }
         }
-
-        // --- 5. If the selected item has changed, animate it shrinking then expanding back to normal size ---
-        // TODO: indicator for selected item changing
-
-        // --- 6. Update UI State
-        self.uiState = .init(
-            isCompact: shouldBeCompact,
-            hoveredWorkspaceId: workspaceToHover,
-            selectedWorkspaceItem: workspaceToSelect
-        )
     }
 }

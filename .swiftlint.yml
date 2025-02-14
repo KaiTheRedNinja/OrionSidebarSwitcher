@@ -1,5 +1,6 @@
 disabled_rules:
   - todo
+  - large_tuple
 
 type_name:
   excluded:
