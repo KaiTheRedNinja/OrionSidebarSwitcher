@@ -21,7 +21,7 @@ class WorkspaceSwitcherView: NSView {
     /// A list of the icon views. The order does not correspond with the order of the workspaces.
     var workspaceIconViews: [WorkspaceIconView] = []
 
-    /// The state that the UI is currently in
+    /// The state that the UI is currently in. Should only be set by ``updateUIElements(actions:)``.
     var uiState: WorkspaceSwitcherUIState!
 
     init() {
@@ -75,6 +75,22 @@ class WorkspaceSwitcherView: NSView {
 
         layer?.addSublayer(topBorder)
         layer?.addSublayer(bottomBorder)
+    }
+}
+
+// To recieve updates from the individual icon views
+extension WorkspaceSwitcherView: WorkspaceIconInteractionDelegate {
+    func workspaceIconMouseEntered(_ workspaceId: Workspace.ID) {
+        updateUIElements(actions: [.workspaceHovered(workspaceId)])
+    }
+
+    func workspaceIconMouseExited(_ workspaceId: Workspace.ID) {
+        updateUIElements(actions: [.workspaceUnhovered(workspaceId)])
+    }
+
+    func workspaceIconMouseClicked(_ workspaceId: Workspace.ID) {
+        wsGroupManager.focus(workspaceWithId: workspaceId)
+        updateUIElements(actions: [.workspaceSelected(workspaceId)])
     }
 }
 

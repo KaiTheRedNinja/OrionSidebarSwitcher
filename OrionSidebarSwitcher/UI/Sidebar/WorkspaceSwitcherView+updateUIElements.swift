@@ -51,10 +51,116 @@ extension WorkspaceSwitcherView {
     ///     - `workspaceSelected`: Mark that workspace as the one to select
     ///     - `workspaceRemoved`: Mark that workspace as one to remove
     ///     - `workspaceAdded`: Create new empty views
-    /// 3. For each workspace view (which currently includes both views to be removed and views to be added),
+    /// 4. For each workspace view (which currently includes both views to be removed and views to be added),
     ///     - If it is to be removed: Animate its frame changing to 0, then remove it
-    ///     - Else: Animate it to the position and rendering state that it is meant to be
-    /// 4. If the selected item has changed, animate it shrinking then expanding back to normal size
+    ///     - Else: Animate it to the position and rendering style that it is meant to be
+    /// 5. If the selected item has changed, animate it shrinking then expanding back to normal size
+    /// 6. Update the UI state
     func updateUIElements(actions: [WorkspaceSwitcherAction]) {
+        let workspaces = wsGroupManager.workspaceGroup.workspaces
+
+        // --- 1. Determine whether the sidebar is full enough to warrant switching to compact mode ---
+
+        // get the minimum width that the workspaces need if they're all in expanded mode
+        let minimumExpandedWidth = CGFloat(workspaces.count) * WorkspaceIconView.minimumExpandedWidth
+        // if the minimum width is less than the available width, then the sidebar will switch to compact mode.
+        let shouldBeCompact = minimumExpandedWidth < self.frame.width
+
+        // --- 2. For each workspace that still exists, calculate its new size/position within the sidebar ---
+
+        // get the maximum width that all the workspaces can take up if they're all in expanded mode
+        let maximumExpandedWidth = CGFloat(workspaces.count) * WorkspaceIconView.maximumExpandedWidth
+        // if the maximum width is smaller than the available width, we need to set the starting value a bit further
+        // so that the icons are centered. If not, then they can start at the very left of the view.
+        let startingX: CGFloat = if maximumExpandedWidth < self.frame.width {
+            (self.frame.width - maximumExpandedWidth) / 2
+        } else {
+            0
+        }
+        let widthPerIcon: CGFloat = min(
+            WorkspaceIconView.maximumExpandedWidth,
+            self.frame.width / CGFloat(workspaces.count)
+        )
+
+        // determine the width of each icon, given that they all take up the same width
+        var workspaceIconPositions: [Workspace.ID: CGRect] = [:]
+        var currentX = startingX
+        for (index, workspace) in workspaces.enumerated() {
+            workspaceIconPositions[workspace.id] = .init(
+                x: currentX,
+                y: 0,
+                width: widthPerIcon,
+                height: self.frame.height
+            )
+            currentX += widthPerIcon
+        }
+
+        // --- 3. Execute the actions ---
+
+        var workspaceToHover: Workspace.ID?
+        var workspaceToSelect: Workspace.ID = uiState.selectedWorkspaceItem // set to the current workspace
+        var workspacesToRemove: Set<Workspace.ID> = []
+
+        for action in actions {
+            switch action {
+            case let .workspaceHovered(workspaceId):    // Mark that workspace as the one to hover
+                workspaceToHover = workspaceId
+            case let .workspaceUnhovered(workspaceId):  // Mark the workspace to hover as nil
+                if workspaceToHover == workspaceId {
+                    workspaceToHover = nil
+                }
+            case let .workspaceSelected(workspaceId):   // Mark that workspace as the one to select
+                workspaceToSelect = workspaceId
+            case let .workspaceRemoved(workspaceId):    // Mark that workspace as one to remove
+                workspacesToRemove.insert(workspaceId)
+            case let .workspaceAdded(workspace, _):  // Create new empty views
+                // the workspace must have a position to go to, or else its ignored
+                guard let targetFrame = workspaceIconPositions[workspace.id] else { continue }
+
+                let iconView = WorkspaceIconView()
+                iconView.workspace = workspace
+                iconView.setup()
+                iconView.interactionDelegate = self
+                iconView.frame = .init(x: targetFrame.midX, y: targetFrame.midY, width: 0, height: 0)
+            }
+        }
+
+        // --- 4. Update each workspace view ---
+        for workspaceIconView in self.workspaceIconViews {
+            let workspaceId = workspaceIconView.workspace.id
+
+            // If it is to be removed: Animate its frame changing to 0, then remove it
+            if workspacesToRemove.contains(workspaceId) {
+                // TODO: animate the view to zero
+                workspaceIconView.removeFromSuperview()
+                return
+            }
+
+            // Else, animate it to the position and rendering style that it is meant to be
+            let targetRenderingStyle: WorkspaceIconRenderingStyle = if workspaceToSelect == workspaceId {
+                .selected
+            } else if workspaceToHover == workspaceId || !shouldBeCompact {
+                .unselectedExpanded
+            } else {
+                .unselectedCompact
+            }
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.3
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+
+                workspaceIconView.animator().frame = workspaceIconPositions[workspaceId]!
+                workspaceIconView.layout(renderingStyleChangedTo: targetRenderingStyle)
+            }
+        }
+
+        // --- 5. If the selected item has changed, animate it shrinking then expanding back to normal size ---
+        // TODO: indicator for selected item changing
+
+        // --- 6. Update UI State
+        self.uiState = .init(
+            isCompact: shouldBeCompact,
+            hoveredWorkspaceId: workspaceToHover,
+            selectedWorkspaceItem: workspaceToSelect
+        )
     }
 }

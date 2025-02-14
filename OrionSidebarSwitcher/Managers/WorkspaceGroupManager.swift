@@ -52,4 +52,9 @@ class WorkspaceGroupManager {
 
         return selectedTab
     }
+
+    /// Focuses the given workspace
+    func focus(workspaceWithId workspaceId: Workspace.ID) {
+        workspaceGroup.focusedWorkspaceID = workspaceId
+    }
 }
