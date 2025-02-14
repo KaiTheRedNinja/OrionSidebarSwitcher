@@ -24,18 +24,11 @@ class WorkspaceSwitcherView: NSView {
     /// The state that the UI is currently in. Should only be set by ``updateUIElements(actions:)``.
     var uiState: WorkspaceSwitcherUIState!
 
-    init() {
-        super.init(frame: .zero)
-        // Add the separators to the view
-        addSeparators()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     /// Sets up the workspace switcher view's UI and listeners
     func setup() {
+        // Add the separators to the view
+        addSeparators()
+
         // Set up the UI state object
         uiState = .init(
             isCompact: false,
@@ -47,9 +40,12 @@ class WorkspaceSwitcherView: NSView {
         watch(
             attribute: wsGroupManager.workspaceGroup.$focusedWorkspaceID,
             storage: &focusedWorkspaceWatcher,
-            call: self.updateUIElements(actions: [
-                .workspaceSelected(self.wsGroupManager.workspaceGroup.focusedWorkspaceID)
-            ])
+            call: self.updateUIElements(
+                actions: [
+                    .workspaceSelected(self.wsGroupManager.workspaceGroup.focusedWorkspaceID)
+                ],
+                workspaces: self.wsGroupManager.workspaceGroup.workspaces
+            )
         )
         // Watch the list of workspaces
         watch(
@@ -61,9 +57,19 @@ class WorkspaceSwitcherView: NSView {
         // updateUIElements() is called by the watchers, so we don't need to manually call it.
     }
 
+    override func layout() {
+        super.layout()
+        guard let wsGroupManager else { return }
+        updateUIElements(actions: [], workspaces: wsGroupManager.workspaceGroup.workspaces)
+        addSeparators()
+    }
+
     /// Adds the separators at the top and bottom of the switcher view
     private func addSeparators() {
         wantsLayer = true
+
+        // delete all existing sublayers
+        layer?.sublayers?.removeAll()
 
         let topBorder = CALayer()
         topBorder.backgroundColor = NSColor.separatorColor.cgColor
@@ -81,16 +87,28 @@ class WorkspaceSwitcherView: NSView {
 // To recieve updates from the individual icon views
 extension WorkspaceSwitcherView: WorkspaceIconInteractionDelegate {
     func workspaceIconMouseEntered(_ workspaceId: Workspace.ID) {
-        updateUIElements(actions: [.workspaceHovered(workspaceId)])
+        guard let wsGroupManager else { return }
+        updateUIElements(
+            actions: [.workspaceHovered(workspaceId)],
+            workspaces: wsGroupManager.workspaceGroup.workspaces
+        )
     }
 
     func workspaceIconMouseExited(_ workspaceId: Workspace.ID) {
-        updateUIElements(actions: [.workspaceUnhovered(workspaceId)])
+        guard let wsGroupManager else { return }
+        updateUIElements(
+            actions: [.workspaceUnhovered(workspaceId)],
+            workspaces: wsGroupManager.workspaceGroup.workspaces
+        )
     }
 
     func workspaceIconMouseClicked(_ workspaceId: Workspace.ID) {
+        guard let wsGroupManager else { return }
         wsGroupManager.focus(workspaceWithId: workspaceId)
-        updateUIElements(actions: [.workspaceSelected(workspaceId)])
+        updateUIElements(
+            actions: [.workspaceSelected(workspaceId)],
+            workspaces: wsGroupManager.workspaceGroup.workspaces
+        )
     }
 }
 

@@ -34,7 +34,8 @@ extension WorkspaceSwitcherView {
         // updatee the UI elements with these removed and added items
         updateUIElements(
             actions: removedWorkspaceItems.map { .workspaceRemoved($0) } +
-                     addedItemsWithIndex.map { .workspaceAdded($0.0, insertionIndex: $0.1) }
+                     addedItemsWithIndex.map { .workspaceAdded($0.0, insertionIndex: $0.1) },
+            workspaces: wsGroupManager.workspaceGroup.workspaces
         )
     }
 
@@ -56,9 +57,7 @@ extension WorkspaceSwitcherView {
     ///     - Else: Animate it to the position and rendering style that it is meant to be
     /// 5. If the selected item has changed, animate it shrinking then expanding back to normal size
     /// 6. Update the UI state
-    func updateUIElements(actions: [WorkspaceSwitcherAction]) {
-        let workspaces = wsGroupManager.workspaceGroup.workspaces
-
+    func updateUIElements(actions: [WorkspaceSwitcherAction], workspaces: [Workspace]) {
         // --- 1. Determine whether the sidebar is full enough to warrant switching to compact mode ---
         let shouldBeCompact = shouldBeCompactGiven(
             workspaceCount: workspaces.count,
@@ -81,11 +80,18 @@ extension WorkspaceSwitcherView {
         )
 
         // --- 4. Update each workspace view ---
+        let shouldAnimate = actions.contains { // we animate position when workspaces have changed
+            switch $0 {
+            case .workspaceAdded, .workspaceRemoved: true
+            default: false
+            }
+        }
         updateWorkspaceViews(
             workspacesToRemove: workspacesToRemove,
             workspaceToSelect: workspaceToSelect,
             workspaceToHover: workspaceToHover,
             shouldBeCompact: shouldBeCompact,
+            animateMovement: shouldAnimate,
             workspaceIconPositions: workspaceIconPositions
         )
 
@@ -107,8 +113,8 @@ extension WorkspaceSwitcherView {
     ) -> Bool {
         // get the minimum width that the workspaces need if they're all in expanded mode
         let minimumTotalWidth = CGFloat(workspaceCount) * minimumExpandedWidth
-        // if the minimum width is less than the available width, then the sidebar will switch to compact mode.
-        return minimumTotalWidth < availableWidth
+        // if the minimum width is more than the available width, then the sidebar will switch to compact mode.
+        return minimumTotalWidth > availableWidth
     }
 
     private func workspaceIconPositionsGiven(
@@ -180,6 +186,7 @@ extension WorkspaceSwitcherView {
                 iconView.setup()
                 iconView.interactionDelegate = self
                 iconView.frame = .init(x: targetFrame.midX, y: targetFrame.midY, width: 0, height: 0)
+                self.workspaceIconViews.append(iconView)
                 self.addSubview(iconView)
             }
         }
@@ -187,11 +194,12 @@ extension WorkspaceSwitcherView {
         return (workspaceToHover, workspaceToSelect, workspacesToRemove)
     }
 
-    fileprivate func updateWorkspaceViews(
+    fileprivate func updateWorkspaceViews( // swiftlint:disable:this function_parameter_count
         workspacesToRemove: Set<Workspace.ID>,
         workspaceToSelect: Workspace.ID,
         workspaceToHover: Workspace.ID?,
         shouldBeCompact: Bool,
+        animateMovement: Bool,
         workspaceIconPositions: [Workspace.ID: CGRect]
     ) {
         for workspaceIconView in self.workspaceIconViews {
@@ -204,21 +212,27 @@ extension WorkspaceSwitcherView {
                 return
             }
 
-            // Else, animate it to the position and rendering style that it is meant to be
+            // Determine how to render it
             let targetRenderingStyle: WorkspaceIconRenderingStyle = if workspaceToSelect == workspaceId {
-                .selected
+                .selected // the item is selected
             } else if workspaceToHover == workspaceId || !shouldBeCompact {
-                .unselectedExpanded
+                .unselectedExpanded // the item is hovered, or the sidebar is expanded
             } else {
-                .unselectedCompact
+                .unselectedCompact  // the item is not hovered and the sidebar is compacted
             }
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.3
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-                workspaceIconView.animator().frame = workspaceIconPositions[workspaceId]!
-                workspaceIconView.layout(renderingStyleChangedTo: targetRenderingStyle)
+            // animate if needed
+            if animateMovement {
+                NSAnimationContext.runAnimationGroup { context in
+                    context.duration = 0.3
+                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                    workspaceIconView.animator().frame = workspaceIconPositions[workspaceId]!
+                }
+            } else {
+                workspaceIconView.frame = workspaceIconPositions[workspaceId]!
             }
+
+            workspaceIconView.layout(renderingStyleChangedTo: targetRenderingStyle)
         }
     }
 }
