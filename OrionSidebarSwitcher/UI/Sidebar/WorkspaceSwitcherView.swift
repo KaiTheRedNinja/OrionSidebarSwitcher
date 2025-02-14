@@ -18,9 +18,25 @@ class WorkspaceSwitcherView: NSView {
     /// (eg. workspaces added, removed, rearranged)
     private var workspacesOrderWatcher: AnyCancellable?
 
+    /// The ID of the workspace item that is currently being hovered on, if any
+    var hoveredWorkspaceId: Workspace.ID?
+
     /// Sets up the workspace switcher view's UI and listeners
     func setup() {
         addSeparators()
+
+        // Watch the currently focused workspace
+        watch(
+            attribute: wsGroupManager.workspaceGroup.$focusedWorkspaceID,
+            storage: &focusedWorkspaceWatcher,
+            call: self.updateUIElements()
+        )
+        // Watch the list of workspaces
+        watch(
+            attribute: wsGroupManager.workspaceGroup.$workspaces,
+            storage: &workspacesOrderWatcher,
+            call: self.updateUIElements()
+        )
     }
 
     /// Adds the separators at the top and bottom of the switcher view

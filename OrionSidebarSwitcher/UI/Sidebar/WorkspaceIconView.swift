@@ -150,7 +150,8 @@ protocol WorkspaceIconInteractionDelegate: AnyObject {
 enum WorkspaceIconRenderingStyle {
     /// The icon is selected. Should be rendered uncompacted and with accentColor
     case selected
-    /// The icon is not selected but also not compact. Should be rendered uncompacted and gray.
+    /// The icon is not selected but also not compact. Should be rendered uncompacted
+    /// and gray. This may be used when the icon is being hovered on.
     case unselectedExpanded
     /// The icon is not selected and is compact. Should be rendered as a dot.
     case unselectedCompact
