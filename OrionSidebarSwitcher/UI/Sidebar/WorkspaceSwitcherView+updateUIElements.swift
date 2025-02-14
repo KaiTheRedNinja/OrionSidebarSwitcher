@@ -185,7 +185,7 @@ extension WorkspaceSwitcherView {
                 iconView.workspace = workspace
                 iconView.setup()
                 iconView.interactionDelegate = self
-                iconView.frame = .init(x: targetFrame.midX, y: targetFrame.midY, width: 0, height: 0)
+                iconView.frame = .init(x: targetFrame.minX, y: 0, width: 0, height: frame.height)
                 self.workspaceIconViews.append(iconView)
                 self.addSubview(iconView)
             }

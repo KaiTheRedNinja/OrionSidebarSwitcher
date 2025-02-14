@@ -137,9 +137,14 @@ class WorkspaceIconView: NSView {
         }
     }
 
-    /// Animates the icon view shrinking then springing back to normal
+    /// Animates a shake effect for when the icon is clicked
     func click() {
-        // TODO: click animation
+        let animation = CABasicAnimation(keyPath: "position")
+        animation.duration = 0.1
+        animation.autoreverses = true
+        animation.fromValue = CGPoint(x: frame.minX, y: frame.minY)
+        animation.toValue = CGPoint(x: frame.minX, y: frame.minY+2)
+        layer?.add(animation, forKey: "position")
     }
 
     override func updateTrackingAreas() {
