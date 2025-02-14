@@ -33,28 +33,25 @@ class WorkspaceIconView: NSView {
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
+        self.wantsLayer = true
+        self.layer?.anchorPoint = CGPoint(x: 1, y: 1)
 
         // create both views
         iconView = NSImageView()
         iconView.imageScaling = .scaleProportionallyUpOrDown
         iconView.contentTintColor = .gray
         iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.wantsLayer = true
         self.addSubview(iconView)
 
         dotView = CircleView()
         dotView.circleColor = .gray
         dotView.circleRadius = 3
         dotView.translatesAutoresizingMaskIntoConstraints = false
-        dotView.wantsLayer = true
         self.addSubview(dotView)
 
-        // downscale both views and make them invisible
-        let smallScaleTransform = CATransform3DMakeScale(0, 0, 1)
-        iconView.layer?.transform = smallScaleTransform
-        dotView.layer?.transform = smallScaleTransform
-        iconView.layer?.opacity = 0
-        dotView.layer?.opacity = 0
+        // make both views invisible
+        iconView.alphaValue = 0
+        dotView.alphaValue = 0
 
         // constrain their frames to be equal to this view's
         NSLayoutConstraint.activate([
@@ -109,8 +106,8 @@ class WorkspaceIconView: NSView {
         let shouldAnimate = newRenderingStyle != renderingStyle
         defer { renderingStyle = newRenderingStyle }
 
-        let hiddenTransform: (CATransform3D, Float) = (CATransform3DMakeScale(0, 0, 1), 0)
-        let shownTransform: (CATransform3D, Float) = (CATransform3DIdentity, 1)
+        let hiddenTransform: (CATransform3D, CGFloat) = (CATransform3DMakeScale(0, 0, 1), 0)
+        let shownTransform: (CATransform3D, CGFloat) = (CATransform3DIdentity, 1)
 
         // determine the new scales and opacities for each
         // the only time the dot is shown is when the view is compact
@@ -124,19 +121,25 @@ class WorkspaceIconView: NSView {
                 context.duration = 0.3
                 context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-                iconView.animator().layer?.transform = iconViewTransform.0
-                iconView.animator().layer?.opacity = iconViewTransform.1
+                iconView.animator().alphaValue = iconViewTransform.1
                 iconView.animator().contentTintColor = iconViewColor
-                dotView.animator().layer?.transform = dotViewTransform.0
-                dotView.animator().layer?.opacity = dotViewTransform.1
+                dotView.animator().alphaValue = dotViewTransform.1
             }
         } else {
-            iconView.layer?.transform = iconViewTransform.0
-            iconView.layer?.opacity = iconViewTransform.1
+            iconView.alphaValue = iconViewTransform.1
             iconView.contentTintColor = iconViewColor
-            dotView.layer?.transform = dotViewTransform.0
-            dotView.layer?.opacity = dotViewTransform.1
+            dotView.alphaValue = dotViewTransform.1
         }
+
+        // if we went from unselected to selected, we undergo the click animation
+        if newRenderingStyle == .selected && shouldAnimate {
+            click()
+        }
+    }
+
+    /// Animates the icon view shrinking then springing back to normal
+    func click() {
+        // TODO: click animation
     }
 
     override func updateTrackingAreas() {
