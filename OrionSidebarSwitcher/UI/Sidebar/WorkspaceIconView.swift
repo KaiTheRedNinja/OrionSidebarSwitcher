@@ -10,8 +10,9 @@ import Combine
 
 /// A view, used within the switcher, that represents a single workspace
 class WorkspaceIconView: NSView {
-    /// The workspace that this icon is for
-    weak var workspace: Workspace?
+    /// The workspace that this icon is for. This is a strong reference so that we can still access the ID
+    /// after the workspace is removed from the manager.
+    var workspace: Workspace!
     /// The interaction delegate
     weak var interactionDelegate: WorkspaceIconInteractionDelegate?
 
@@ -23,6 +24,9 @@ class WorkspaceIconView: NSView {
     private var iconView: NSImageView!
     /// The view used to display a dot in "contracted" mode
     private var dotView: NSTextView!
+
+    /// The minimum width of a WorkspaceIconView before it enters compact mode
+    static let minimumExpandedWidth: CGFloat = 48
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
