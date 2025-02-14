@@ -55,7 +55,7 @@ class MainWindowController: NSWindowController {
 
         // Set up the workspace group's manager, and provide
         // references to the sidebar and page view controllers
-        let wsgManager = WorkspaceGroupManager(workspaceGroup: .blankWorkspaceGroup())
+        let wsgManager = WorkspaceGroupManager(workspaceGroup: .blankWorkspaceGroup(workspaceCount: 5))
         self.wsGroupManager = wsgManager
         self.sidebarViewController.wsGroupManager = wsgManager
         self.pageViewController.wsGroupManager = wsgManager

@@ -30,16 +30,17 @@ class WorkspaceGroup: Identifiable, ObservableObject {
         self.focusedWorkspaceID = focusedWorkspaceID
     }
 
-    /// A factory method which creates a workspace group with a single "Blank Workspace".
+    /// A factory method which creates a workspace group with a given number of "Blank Workspaces".
     /// Calling this function repeatedly will produce `Workspace`s with identical details, but with
     /// different `id`s and tab `id`s. The `focusedWorkspaceID` is guarenteed to be the same
     /// as the sole `workspace`'s.
-    static func blankWorkspaceGroup() -> WorkspaceGroup {
-        let blankWorkspace = Workspace.blankWorkspace()
+    static func blankWorkspaceGroup(workspaceCount: Int = 1) -> WorkspaceGroup {
+        assert(workspaceCount >= 1, "Cannot create a workspace group with zero workspaces")
+        let blankWorkspaces = (0..<workspaceCount).map { _ in Workspace.blankWorkspace() }
 
         return .init(
-            workspaces: [blankWorkspace],
-            focusedWorkspaceID: blankWorkspace.id
+            workspaces: blankWorkspaces,
+            focusedWorkspaceID: blankWorkspaces[0].id
         )
     }
 }
