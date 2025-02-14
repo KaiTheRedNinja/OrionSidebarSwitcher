@@ -20,14 +20,17 @@ class WorkspaceGroup: Identifiable, ObservableObject {
     /// invalid state
     @Published var focusedWorkspaceID: Workspace.ID
 
+    /// Creates a workspace group with a list of workspaces and the workspace to focus. If not provided, it defaults
+    /// to the first workspace.
     init(
         id: UUID = .init(),
         workspaces: [Workspace],
-        focusedWorkspaceID: Workspace.ID
+        focusedWorkspaceID: Workspace.ID? = nil
     ) {
+        assert(!workspaces.isEmpty, "Cannot create a workspace group with zero workspaces")
         self.id = id
         self.workspaces = workspaces
-        self.focusedWorkspaceID = focusedWorkspaceID
+        self.focusedWorkspaceID = focusedWorkspaceID ?? workspaces[0].id
     }
 
     /// A factory method which creates a workspace group with a given number of "Blank Workspaces".
@@ -41,6 +44,37 @@ class WorkspaceGroup: Identifiable, ObservableObject {
         return .init(
             workspaces: blankWorkspaces,
             focusedWorkspaceID: blankWorkspaces[0].id
+        )
+    }
+
+    /// A factory method which creates a workspace with sample data. Follows the same repeat rules as above.
+    static func sampleWorkspaceGroup() -> WorkspaceGroup {
+        WorkspaceGroup(
+            workspaces: [
+                .init(
+                    name: "MacBook",
+                    icon: .init(systemSymbolName: "macbook", accessibilityDescription: "Tab Icon")!,
+                    pinnedTabs: [],
+                    regularTabs: [
+                        .init(name: "Reviews", icon: TabItem.defaultIcon),
+                        .init(name: "Comparisons", icon: TabItem.defaultIcon)
+                    ]
+                ),
+                .blankWorkspace(),
+                .init(
+                    name: "Food",
+                    icon: .init(systemSymbolName: "birthday.cake.fill", accessibilityDescription: "Tab Icon")!,
+                    pinnedTabs: [
+                        .init(name: "Potato", icon: TabItem.defaultIcon)
+                    ],
+                    regularTabs: [
+                        .init(name: "Recipies", icon: TabItem.defaultIcon),
+                        .init(name: "Why do people eat cake?", icon: TabItem.defaultIcon)
+                    ]
+                ),
+                .blankWorkspace(),
+                .blankWorkspace()
+            ]
         )
     }
 }

@@ -29,21 +29,23 @@ class Workspace: Identifiable, ObservableObject {
     /// A computed property for all tabs within this workspace. Pinned tabs are first, followed by regular tabs.
     var allTabs: [TabItem] { pinnedTabs + regularTabs }
 
-    /// Creates a workspace from its name, icon, pinned/unpinned tabs, and selected tab ID
+    /// Creates a workspace from its name, icon, pinned/unpinned tabs, and selected tab ID. If not provided, it defaults
+    /// to the first regular tab
     init(
         id: UUID = .init(),
         name: String,
         icon: NSImage,
         pinnedTabs: [TabItem],
         regularTabs: [TabItem],
-        selectedTabID: TabItem.ID
+        selectedTabID: TabItem.ID? = nil
     ) {
+        assert(!regularTabs.isEmpty, "At least one regular tab must be provided")
         self.id = id
         self.name = name
         self.icon = icon
         self.pinnedTabs = pinnedTabs
         self.regularTabs = regularTabs
-        self.selectedTabId = selectedTabID
+        self.selectedTabId = selectedTabID ?? regularTabs[0].id
     }
 
     /// A factory method which creates a "Blank Workspace" workspace, which contains one

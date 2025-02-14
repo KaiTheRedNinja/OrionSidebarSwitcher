@@ -12,20 +12,15 @@ class PageViewController: NSViewController {
     /// A weak reference to the workspace group manager
     weak var wsGroupManager: WorkspaceGroupManager!
 
-    /// The watcher that detects when the focused workspace changes
-    private var focusedWorkspaceChangeWatcher: AnyCancellable?
-    /// The watcher that detects when the selected tab of the focused workspace changes
-    private var selectedTabChangeWatcher: AnyCancellable?
-    /// The watcher that detects when the selected tab's details change
-    private var selectedTabDetailsChangeWatcher: AnyCancellable?
+    /// The watcher that detects when the focused tab changes
+    private var focusedTabChangeWatcher: AnyCancellable?
+    /// The watcher that detects when the focused tab's attributes change
+    private var focusedTabAttributeWatcher: AnyCancellable?
 
     /// The view responsible for showing the primary image
     private var imageView: NSImageView!
     /// The view responsible for showing the primary text
     private var textView: NSTextView!
-
-    /// A weak reference to the current tab
-    weak var currentTab: TabItem?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -68,43 +63,31 @@ class PageViewController: NSViewController {
     }
 
     deinit {
-        focusedWorkspaceChangeWatcher?.cancel()
-        selectedTabChangeWatcher?.cancel()
+        focusedTabChangeWatcher?.cancel()
+        focusedTabAttributeWatcher?.cancel()
     }
 
     /// Sets up the page view controller's listeners
     func setup() {
         watch(
-            attribute: wsGroupManager.workspaceGroup.$focusedWorkspaceID,
-            storage: &focusedWorkspaceChangeWatcher,
-            call: self.focusedWorkspaceDidChange()
+            attribute: wsGroupManager.currentTabPublisher,
+            storage: &focusedTabChangeWatcher,
+            call: self.watchCurrentTab()
         )
     }
 
-    /// A function called whenever the focused workspace changes
-    func focusedWorkspaceDidChange() {
+    /// Watches the attributes of the current tab, so its updated if the icon/title change
+    func watchCurrentTab() {
         watch(
-            attribute: wsGroupManager.currentWorkspace().$selectedTabId,
-            storage: &selectedTabChangeWatcher,
-            call: self.selectedTabDidChange()
-        )
-    }
-
-    /// A function called whenever the selected tab of the focused workspace changes
-    func selectedTabDidChange() {
-        // Update the current tab
-        currentTab = wsGroupManager.currentWorkspaceTab()
-
-        watch(
-            attribute: currentTab!.objectWillChange,
-            storage: &selectedTabDetailsChangeWatcher,
+            attribute: wsGroupManager.currentWorkspaceTab().objectWillChange,
+            storage: &focusedTabAttributeWatcher,
             call: self.updateUIToCurrentTab()
         )
     }
 
     /// Updates the UI to be accurate to that of the current tab
     func updateUIToCurrentTab() {
-        guard let currentTab else { return }
+        let currentTab = wsGroupManager.currentWorkspaceTab()
 
         // Update the UI
         imageView.image = currentTab.icon
