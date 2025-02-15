@@ -14,6 +14,9 @@ class WorkspaceGroupHolderView: NSView {
 
     /// The watcher that detects when the focused workspace changes
     private var focusedWorkspaceWatcher: AnyCancellable?
+    /// The watcher that detects when the number or order of workspaces change
+    /// (eg. workspaces added, removed, rearranged)
+    private var workspacesOrderWatcher: AnyCancellable?
 
     /// A list of the tab list views. The order does not correspond with the order of the workspaces.
     var tabListViews: [WorkspaceTabListView] = []
@@ -23,14 +26,6 @@ class WorkspaceGroupHolderView: NSView {
 
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
-        // for each workspace, create a tab list view
-        for workspace in wsGroupManager.workspaceGroup.workspaces {
-            let tabListView = WorkspaceTabListView()
-            tabListView.workspace = workspace
-            tabListView.setup()
-            tabListViews.append(tabListView)
-        }
-
         // set up the state
         uiState = .init(shownWorkspaceItem: wsGroupManager.workspaceGroup.focusedWorkspaceID)
 
@@ -44,6 +39,44 @@ class WorkspaceGroupHolderView: NSView {
                 ],
                 workspaces: self.wsGroupManager.workspaceGroup.workspaces
             )
+        )
+
+        // Watch the list of workspaces
+        watch(
+            attribute: wsGroupManager.workspaceGroup.$workspaces,
+            storage: &workspacesOrderWatcher,
+            call: self.updateUIElementsForWorkspaceChanges()
+        )
+    }
+
+    /// A function that wraps ``updateUIElements(actions:)`` by determining which workspaces have been added/removed
+    func updateUIElementsForWorkspaceChanges() {
+        // determine the current on-screen items, and the new workspace items
+        let currentWorkspaceItems = Set(tabListViews.map { $0.workspace.id })
+        let newWorkspaceItems = Set(wsGroupManager.workspaceGroup.workspaces.map { $0.id })
+
+        // use set algebra to determine which have been added and which have been removed
+        let addedWorkspaceItems = newWorkspaceItems.subtracting(currentWorkspaceItems)
+        let removedWorkspaceItems = currentWorkspaceItems.subtracting(newWorkspaceItems)
+
+        // for the added items, determine the indexes that they have been added at
+        let addedItemsWithIndex = addedWorkspaceItems.compactMap { (wsId: Workspace.ID) -> (Workspace, Int)? in
+            // determine the index and object for the ID
+            let addedItem = wsGroupManager.workspaceGroup.workspaces.enumerated().first { (_, workspace) in
+                workspace.id == wsId
+            }
+            if let addedItem {
+                return (addedItem.element, addedItem.offset)
+            } else {
+                return nil
+            }
+        }
+
+        // updatee the UI elements with these removed and added items
+        updateUIElements(
+            actions: removedWorkspaceItems.map { .workspaceRemoved($0) } +
+            addedItemsWithIndex.map { .workspaceAdded($0.0, insertionIndex: $0.1) },
+            workspaces: wsGroupManager.workspaceGroup.workspaces
         )
     }
 
@@ -64,7 +97,91 @@ class WorkspaceGroupHolderView: NSView {
     ///     d. After the animation, remove the old workspace from this view
     /// 4. Else, just resize the currently focused workspace
     /// 5. Update the UI state
-    func updateUIElements(actions: [WorkspaceGroupHolderAction], workspaces: [Workspace]) {
+    func updateUIElements( // swiftlint:disable:this function_body_length cyclomatic_complexity
+        actions: [WorkspaceGroupHolderAction],
+        workspaces: [Workspace]
+    ) {
+        // --- 1. Determine the frame that the focused tab view should take up ---
+        let focusedTabViewFrame = self.bounds
+
+        // --- 2. Execute the actions ---
+        var workspaceToShow = uiState.shownWorkspaceItem
+        var workspacesToRemove: Set<Workspace.ID> = []
+        for action in actions {
+            switch action {
+            case let .workspaceSelected(workspaceId):
+                workspaceToShow = workspaceId
+            case let .workspaceRemoved(workspaceId):
+                workspacesToRemove.insert(workspaceId)
+            case let .workspaceAdded(workspace, _):
+                let tabListView = WorkspaceTabListView()
+                tabListView.workspace = workspace
+                tabListView.setup()
+                tabListViews.append(tabListView)
+            }
+        }
+
+        guard let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == uiState.shownWorkspaceItem }),
+              let workspaceToShowIndex = workspaces.firstIndex(where: { $0.id == workspaceToShow })
+        else {
+            return
+        }
+
+        // --- 3. If the selected workspace has changed ---
+        if workspaceToShowIndex != currentWorkspaceIndex {
+            // Determine which direction the new workspace is coming from
+            let isComingFromRight = currentWorkspaceIndex < workspaceToShowIndex
+            let newWorkspaceFrame = CGRect(
+                x: isComingFromRight
+                    ? focusedTabViewFrame.maxX
+                    : focusedTabViewFrame.minX-focusedTabViewFrame.width,
+                y: 0,
+                width: focusedTabViewFrame.width,
+                height: focusedTabViewFrame.height
+            )
+            let oldWorkspaceFrame = CGRect(
+                x: !isComingFromRight
+                    ? focusedTabViewFrame.maxX
+                    : focusedTabViewFrame.minX-focusedTabViewFrame.width,
+                y: 0,
+                width: focusedTabViewFrame.width,
+                height: focusedTabViewFrame.height
+            )
+
+            for tabListView in tabListViews {
+                if tabListView.workspace.id == uiState.shownWorkspaceItem {
+                    // Animate out the old workspace
+                    NSAnimationContext.runAnimationGroup { context in
+                        context.duration = 1
+                        context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                        tabListView.animator().frame = oldWorkspaceFrame
+                    }
+                    // After the animation, remove the old workspace from this view
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                        tabListView.removeFromSuperview()
+
+                        // if its to be removed, remove it completely
+                        if workspacesToRemove.contains(tabListView.workspace.id) {
+                            self?.tabListViews.removeAll { $0.workspace.id == tabListView.workspace.id }
+                        }
+                    }
+                } else if tabListView.workspace.id == workspaceToShow {
+                    // Add the new workspace to this view, out of frame
+                    tabListView.frame = newWorkspaceFrame
+                    addSubview(tabListView)
+
+                    // Animate in the new workspace
+                    NSAnimationContext.runAnimationGroup { context in
+                        context.duration = 1
+                        context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                        tabListView.animator().frame = focusedTabViewFrame
+                    }
+                } else if workspacesToRemove.contains(tabListView.workspace.id) {
+                    // workspace is to be removed immediately since it isn't shown at all
+                    tabListViews.removeAll { $0.workspace.id == tabListView.workspace.id }
+                }
+            }
+        }
     }
 }
 
