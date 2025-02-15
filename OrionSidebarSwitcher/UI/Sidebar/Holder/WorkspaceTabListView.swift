@@ -9,6 +9,10 @@ import Cocoa
 
 /// A view that contains the contents of a workspace tab
 class WorkspaceTabListView: NSView {
+    /// The workspace that this view lists tabs for. This is a strong reference so that we can still access the ID
+    /// after the workspace is removed from the manager.
+    var workspace: Workspace!
+
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
         wantsLayer = true
