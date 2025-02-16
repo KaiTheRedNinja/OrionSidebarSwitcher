@@ -48,6 +48,7 @@ class WorkspaceSwitcherView: NSView {
                 workspaces: self.wsGroupManager.workspaceGroup.workspaces
             )
         }
+
         // Watch the list of workspaces
         watch(
             attribute: wsGroupManager.workspaceGroup.$workspaces,
@@ -55,8 +56,6 @@ class WorkspaceSwitcherView: NSView {
         ) { workspaces in
             self.updateUIElementsForWorkspaceChanges(workspaces: workspaces)
         }
-
-        // updateUIElements() is called by the watchers, so we don't need to manually call it.
     }
 
     override func layout() {
