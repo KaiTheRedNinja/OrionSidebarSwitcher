@@ -20,6 +20,8 @@ class WorkspaceSwitcherView: NSView {
 
     /// A list of the icon views. The order does not correspond with the order of the workspaces.
     var workspaceIconViews: [WorkspaceIconView] = []
+    /// The add workspace icon view
+    var addWorkspaceIconView: AddWorkspaceIconView!
 
     /// The state that the UI is currently in. Should only be set by ``updateUIElements(actions:)``.
     var uiState: WorkspaceSwitcherUIState!
@@ -28,6 +30,10 @@ class WorkspaceSwitcherView: NSView {
     func setup() {
         // Add the separators to the view
         addSeparators()
+
+        // add the workspace icon to the view
+        addWorkspaceIconView = .init()
+        addSubview(addWorkspaceIconView)
 
         // Set up the UI state object
         uiState = .init(

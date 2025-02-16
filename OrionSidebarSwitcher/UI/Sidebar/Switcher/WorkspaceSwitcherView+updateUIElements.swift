@@ -98,6 +98,14 @@ extension WorkspaceSwitcherView {
             workspaceIconPositions: workspaceIconPositions
         )
 
+        // update the plus icon
+        addWorkspaceIconView.frame = .init(
+            x: self.frame.width - 30,
+            y: 0,
+            width: 30,
+            height: self.frame.height
+        )
+
         // --- 5. Update UI State
         self.uiState = .init(
             isCompact: shouldBeCompact,
