@@ -33,6 +33,7 @@ class WorkspaceSwitcherView: NSView {
 
         // add the workspace icon to the view
         addWorkspaceIconView = .init()
+        addWorkspaceIconView.interactionDelegate = self
         addSubview(addWorkspaceIconView)
 
         // Set up the UI state object
@@ -138,6 +139,14 @@ extension WorkspaceSwitcherView: WorkspaceIconInteractionDelegate {
             actions: [.workspaceRemoved(workspaceId)],
             workspaces: wsGroupManager.workspaceGroup.workspaces
         )
+    }
+}
+
+// to recieve updates for adding a new workspace
+extension WorkspaceSwitcherView: AddWorkspaceInteractionDelegate {
+    func workspaceAdditionRequested() {
+        guard let wsGroupManager else { return }
+        wsGroupManager.addWorkspace()
     }
 }
 

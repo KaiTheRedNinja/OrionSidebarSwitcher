@@ -79,4 +79,9 @@ class WorkspaceGroupManager {
 
         workspaceGroup.workspaces.remove(at: workspaceIndex)
     }
+
+    /// Adds a new blank workspace
+    func addWorkspace(workspace: Workspace = .blankWorkspace()) {
+        workspaceGroup.workspaces.append(workspace)
+    }
 }
