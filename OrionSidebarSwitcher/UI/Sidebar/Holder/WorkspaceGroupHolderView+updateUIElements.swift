@@ -57,7 +57,7 @@ extension WorkspaceGroupHolderView {
     ///     c. Add the new workspace to this view, then animate it in
     ///     d. Delete views that are to be deleted, and are currently not shown
     /// 6. Update the UI state
-    func updateUIElements( // swiftlint:disable:this function_body_length cyclomatic_complexity
+    func updateUIElements(
         actions: [WorkspaceGroupHolderAction],
         workspaces: [Workspace]
     ) {
@@ -65,21 +65,10 @@ extension WorkspaceGroupHolderView {
         let focusedTabViewFrame = self.bounds
 
         // --- 2. Execute the actions ---
-        var workspaceToShow = uiState.shownWorkspaceItem
-        var workspacesToRemove: Set<Workspace.ID> = []
-        for action in actions {
-            switch action {
-            case let .workspaceSelected(workspaceId):
-                workspaceToShow = workspaceId
-            case let .workspaceRemoved(workspaceId):
-                workspacesToRemove.insert(workspaceId)
-            case let .workspaceAdded(workspace, _):
-                let tabListView = WorkspaceTabListView()
-                tabListView.workspace = workspace
-                tabListView.setup()
-                tabListViews.append(tabListView)
-            }
-        }
+        let (workspaceToShow, workspacesToRemove) = executeActions(
+            currentWorkspaceId: uiState.shownWorkspaceItem,
+            actions: actions
+        )
 
         // --- 5. Update the state ---
         defer {
@@ -94,9 +83,8 @@ extension WorkspaceGroupHolderView {
         let currentWorkspaceView = tabListViews.first { $0.workspace.id == uiState.shownWorkspaceItem }
 
         // get the position of the workspace to show. This MUST exist.
-        guard
-            let workspaceToShowIndex = workspaces.firstIndex(where: { $0.id == workspaceToShow }),
-            let workspaceToShowView = tabListViews.first(where: { $0.workspace.id == workspaceToShow })
+        guard let workspaceToShowIndex = workspaces.firstIndex(where: { $0.id == workspaceToShow }),
+              let workspaceToShowView = tabListViews.first(where: { $0.workspace.id == workspaceToShow })
         else { return }
 
         guard workspaceToShowIndex != currentWorkspaceIndex else {
@@ -111,6 +99,66 @@ extension WorkspaceGroupHolderView {
 
         // ----- a. Determine which direction the new workspace is coming from -----
 
+        let (newWorkspaceFrame, oldWorkspaceFrame) = workspaceFrames(
+            currentWorkspaceIndex: currentWorkspaceIndex,
+            workspaceToShowIndex: workspaceToShowIndex,
+            focusedTabViewFrame: focusedTabViewFrame
+        )
+
+        // ----- b. Animate out the old workspace, then remove it from this view -----
+        animateOutOldView(
+            currentWorkspaceView: currentWorkspaceView,
+            oldWorkspaceFrame: oldWorkspaceFrame,
+            workspacesToRemove: workspacesToRemove
+        )
+
+        // ----- c. Add the new workspace to this view, then animate it in -----
+        animateInNewView(
+            workspaceToShowView: workspaceToShowView,
+            newWorkspaceFrame: newWorkspaceFrame,
+            focusedTabViewFrame: focusedTabViewFrame
+        )
+
+        // ----- d. Delete views that are to be deleted, and are currently not shown -----
+        deleteRemovedHiddenViews(
+            workspacesToRemove: workspacesToRemove,
+            currentWorkspaceId: uiState.shownWorkspaceItem
+        )
+    }
+
+    private func executeActions(
+        currentWorkspaceId: Workspace.ID?,
+        actions: [WorkspaceGroupHolderAction]
+    ) -> (
+        workspaceToShow: Workspace.ID?,
+        workspacesToRemove: Set<Workspace.ID>
+    ) {
+        var workspaceToShow = currentWorkspaceId
+        var workspacesToRemove: Set<Workspace.ID> = []
+        for action in actions {
+            switch action {
+            case let .workspaceSelected(workspaceId):
+                workspaceToShow = workspaceId
+            case let .workspaceRemoved(workspaceId):
+                workspacesToRemove.insert(workspaceId)
+            case let .workspaceAdded(workspace, _):
+                let tabListView = WorkspaceTabListView()
+                tabListView.workspace = workspace
+                tabListView.setup()
+                tabListViews.append(tabListView)
+            }
+        }
+        return (workspaceToShow, workspacesToRemove)
+    }
+
+    private func workspaceFrames(
+        currentWorkspaceIndex: Int?,
+        workspaceToShowIndex: Int,
+        focusedTabViewFrame: CGRect
+    ) -> (
+        newWorkspaceFrame: CGRect,
+        oldWorkspaceFrame: CGRect
+    ) {
         // The horizontal offset of the incoming view, in terms of the width of the frame.
         // This has three possible values:
         // 1: The frame is offset to the right by its width, making it just outside the right of view
@@ -142,26 +190,38 @@ extension WorkspaceGroupHolderView {
             height: focusedTabViewFrame.height
         )
 
-        // ----- b. Animate out the old workspace, then remove it from this view -----
-        if let currentWorkspaceView {
-            // Animate out the old workspace
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 1
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                currentWorkspaceView.animator().frame = oldWorkspaceFrame
-            }
-            // After the animation, remove the old workspace from this view
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-                currentWorkspaceView.removeFromSuperview()
+        return (newWorkspaceFrame, oldWorkspaceFrame)
+    }
 
-                // if its to be removed, remove it completely
-                if workspacesToRemove.contains(currentWorkspaceView.workspace.id) {
-                    self?.tabListViews.removeAll { $0.workspace.id == currentWorkspaceView.workspace.id }
-                }
+    private func animateOutOldView(
+        currentWorkspaceView: WorkspaceTabListView?,
+        oldWorkspaceFrame: CGRect,
+        workspacesToRemove: Set<Workspace.ID>
+    ) {
+        guard let currentWorkspaceView else { return }
+
+        // Animate out the old workspace
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 1
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            currentWorkspaceView.animator().frame = oldWorkspaceFrame
+        }
+        // After the animation, remove the old workspace from this view
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            currentWorkspaceView.removeFromSuperview()
+
+            // if its to be removed, remove it completely
+            if workspacesToRemove.contains(currentWorkspaceView.workspace.id) {
+                self?.tabListViews.removeAll { $0.workspace.id == currentWorkspaceView.workspace.id }
             }
         }
+    }
 
-        // ----- c. Add the new workspace to this view, then animate it in -----
+    private func animateInNewView(
+        workspaceToShowView: WorkspaceTabListView,
+        newWorkspaceFrame: CGRect,
+        focusedTabViewFrame: CGRect
+    ) {
         // animate in the workspace to show
         // Add the new workspace to this view, out of frame
         workspaceToShowView.frame = newWorkspaceFrame
@@ -173,10 +233,14 @@ extension WorkspaceGroupHolderView {
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             workspaceToShowView.animator().frame = focusedTabViewFrame
         }
+    }
 
-        // ----- d. Delete views that are to be deleted, and are currently not shown -----
+    private func deleteRemovedHiddenViews(
+        workspacesToRemove: Set<Workspace.ID>,
+        currentWorkspaceId: Workspace.ID?
+    ) {
         // remove all the views that are to be removed, with exception for the currently shown workspace
-        for workspaceToRemove in workspacesToRemove where workspaceToRemove != uiState.shownWorkspaceItem {
+        for workspaceToRemove in workspacesToRemove where workspaceToRemove != currentWorkspaceId {
             tabListViews.removeAll { $0.workspace.id == workspaceToRemove }
         }
     }
