@@ -27,14 +27,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 func watch<P: Publisher>(
     attribute: P,
     storage: inout AnyCancellable?,
-    call: @escaping @autoclosure () -> Void
+    call: @escaping (P.Output) -> Void
 ) where P.Failure == Never {
     // Cancel whatever is in the storage
     storage?.cancel()
     // Create a new watcher
-    storage = attribute.sink { _ in
-        call()
+    storage = attribute.sink { output in
+        call(output)
     }
-    // Call the function as the first trigger
-    call()
 }

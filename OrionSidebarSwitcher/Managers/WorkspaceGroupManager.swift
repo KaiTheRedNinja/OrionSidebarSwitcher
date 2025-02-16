@@ -19,18 +19,9 @@ class WorkspaceGroupManager {
     /// to use the API surface provided by the `WorkspaceGroupManager` instead
     var workspaceGroup: WorkspaceGroup
 
-    /// A publisher that publishes the currently focused tab
-    var currentTabPublisher: AnyPublisher<TabItem, Never> {
-        currentTapSubject.eraseToAnyPublisher()
-    }
-    private let currentTapSubject = PassthroughSubject<TabItem, Never>()
-
     /// Creates a workspace manager from a workspace group
     init(workspaceGroup: WorkspaceGroup) {
         self.workspaceGroup = workspaceGroup
-
-        // send out an update for the current workspace tab
-        currentTapSubject.send(currentWorkspaceTab())
     }
 
     // MARK: Getters
@@ -71,9 +62,6 @@ class WorkspaceGroupManager {
     func focus(workspaceWithId workspaceId: Workspace.ID) {
         // update the state
         workspaceGroup.focusedWorkspaceID = workspaceId
-
-        // send out the focused tab publisher
-        currentTapSubject.send(currentWorkspaceTab())
     }
 
     /// Deletes the given workspace

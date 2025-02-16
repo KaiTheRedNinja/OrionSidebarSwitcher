@@ -9,10 +9,10 @@ import Cocoa
 
 extension WorkspaceSwitcherView {
     /// A function that wraps ``updateUIElements(actions:)`` by determining which workspaces have been added/removed
-    func updateUIElementsForWorkspaceChanges() {
+    func updateUIElementsForWorkspaceChanges(workspaces: [Workspace]) {
         // determine the current on-screen items, and the new workspace items
         let currentWorkspaceItems = Set(workspaceIconViews.map { $0.workspace.id })
-        let newWorkspaceItems = Set(wsGroupManager.workspaceGroup.workspaces.map { $0.id })
+        let newWorkspaceItems = Set(workspaces.map { $0.id })
 
         // use set algebra to determine which have been added and which have been removed
         let addedWorkspaceItems = newWorkspaceItems.subtracting(currentWorkspaceItems)
@@ -21,7 +21,7 @@ extension WorkspaceSwitcherView {
         // for the added items, determine the indexes that they have been added at
         let addedItemsWithIndex = addedWorkspaceItems.compactMap { (wsId: Workspace.ID) -> (Workspace, Int)? in
             // determine the index and object for the ID
-            let addedItem = wsGroupManager.workspaceGroup.workspaces.enumerated().first { (_, workspace) in
+            let addedItem = workspaces.enumerated().first { (_, workspace) in
                 workspace.id == wsId
             }
             if let addedItem {
@@ -35,7 +35,7 @@ extension WorkspaceSwitcherView {
         updateUIElements(
             actions: removedWorkspaceItems.map { .workspaceRemoved($0) } +
                      addedItemsWithIndex.map { .workspaceAdded($0.0, insertionIndex: $0.1) },
-            workspaces: wsGroupManager.workspaceGroup.workspaces
+            workspaces: workspaces
         )
     }
 

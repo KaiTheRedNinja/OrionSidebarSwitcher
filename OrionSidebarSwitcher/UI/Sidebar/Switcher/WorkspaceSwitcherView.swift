@@ -39,20 +39,22 @@ class WorkspaceSwitcherView: NSView {
         // Watch the currently focused workspace
         watch(
             attribute: wsGroupManager.workspaceGroup.$focusedWorkspaceID,
-            storage: &focusedWorkspaceWatcher,
-            call: self.updateUIElements(
+            storage: &focusedWorkspaceWatcher
+        ) { focusedWorkspaceId in
+            self.updateUIElements(
                 actions: [
-                    .workspaceSelected(self.wsGroupManager.workspaceGroup.focusedWorkspaceID)
+                    .workspaceSelected(focusedWorkspaceId)
                 ],
                 workspaces: self.wsGroupManager.workspaceGroup.workspaces
             )
-        )
+        }
         // Watch the list of workspaces
         watch(
             attribute: wsGroupManager.workspaceGroup.$workspaces,
-            storage: &workspacesOrderWatcher,
-            call: self.updateUIElementsForWorkspaceChanges()
-        )
+            storage: &workspacesOrderWatcher
+        ) { workspaces in
+            self.updateUIElementsForWorkspaceChanges(workspaces: workspaces)
+        }
 
         // updateUIElements() is called by the watchers, so we don't need to manually call it.
     }

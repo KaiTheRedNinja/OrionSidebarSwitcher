@@ -72,9 +72,10 @@ class WorkspaceIconView: NSView {
         guard let workspace else { return }
         watch(
             attribute: workspace.$icon,
-            storage: &workspaceIconWatcher,
-            call: self.iconView.image = workspace.icon
-        )
+            storage: &workspaceIconWatcher
+        ) { icon in
+            self.iconView.image = icon
+        }
     }
 
     // MARK: Interaction

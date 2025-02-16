@@ -12,6 +12,8 @@ class PageViewController: NSViewController {
     /// A weak reference to the workspace group manager
     weak var wsGroupManager: WorkspaceGroupManager!
 
+    /// The watcher that detects when the focused workspace changes
+    private var focusedWorkspaceChangeWatcher: AnyCancellable?
     /// The watcher that detects when the focused tab changes
     private var focusedTabChangeWatcher: AnyCancellable?
     /// The watcher that detects when the focused tab's attributes change
@@ -63,6 +65,7 @@ class PageViewController: NSViewController {
     }
 
     deinit {
+        focusedWorkspaceChangeWatcher?.cancel()
         focusedTabChangeWatcher?.cancel()
         focusedTabAttributeWatcher?.cancel()
     }
@@ -70,27 +73,29 @@ class PageViewController: NSViewController {
     /// Sets up the page view controller's listeners
     func setup() {
         watch(
-            attribute: wsGroupManager.currentTabPublisher,
-            storage: &focusedTabChangeWatcher,
-            call: self.watchCurrentTab()
-        )
-    }
+            attribute: wsGroupManager.workspaceGroup.$focusedWorkspaceID,
+            storage: &focusedWorkspaceChangeWatcher
+        ) { [weak self] focusedWorkspaceId in
+            guard let self else { return }
 
-    /// Watches the attributes of the current tab, so its updated if the icon/title change
-    func watchCurrentTab() {
-        watch(
-            attribute: wsGroupManager.currentWorkspaceTab().objectWillChange,
-            storage: &focusedTabAttributeWatcher,
-            call: self.updateUIToCurrentTab()
-        )
-    }
+            guard let focusedWorkspace = wsGroupManager.workspaceGroup.workspaces
+                .first(where: { $0.id == focusedWorkspaceId })
+            else { return }
 
-    /// Updates the UI to be accurate to that of the current tab
-    func updateUIToCurrentTab() {
-        let currentTab = wsGroupManager.currentWorkspaceTab()
+            watch(
+                attribute: focusedWorkspace.$selectedTabId,
+                storage: &focusedTabChangeWatcher
+            ) { [weak self] selectedTabId in
+                guard let self else { return }
 
-        // Update the UI
-        imageView.image = currentTab.icon
-        textView.string = currentTab.name
+                guard let selectedTab = focusedWorkspace.allTabs
+                    .first(where: { $0.id == selectedTabId })
+                else { return }
+
+                // Update the UI
+                imageView.image = selectedTab.icon
+                textView.string = selectedTab.name
+            }
+        }
     }
 }
