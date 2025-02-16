@@ -7,8 +7,8 @@ Roughly based on the specifications at https://hackmd.io/@kagi/S1hXCgYFkg
 
 - [x] Basic window layout
 - [x] Collapsible and resizable sidebar 
-- [ ] Top navigation stack to navigate between different workspaces.
-    - [ ] Add/remove workspace capability and animation
+- [x] Top navigation stack to navigate between different workspaces.
+    - [x] Add/remove workspace capability and animation
     - [x] Workspace icons collapse to dots when there’s less space available, and animate to full size on hover
 - [ ] Workspace content holder
     - [x] Smooth animation while switching to different workspace.
