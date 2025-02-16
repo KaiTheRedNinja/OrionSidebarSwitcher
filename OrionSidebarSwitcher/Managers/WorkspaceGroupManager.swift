@@ -81,7 +81,10 @@ class WorkspaceGroupManager {
     }
 
     /// Adds a new blank workspace
-    func addWorkspace(workspace: Workspace = .blankWorkspace()) {
+    func addWorkspace(workspace: Workspace = .blankWorkspace(), focusAfterCreating: Bool = true) {
         workspaceGroup.workspaces.append(workspace)
+        if focusAfterCreating {
+            focus(workspaceWithId: workspace.id)
+        }
     }
 }
