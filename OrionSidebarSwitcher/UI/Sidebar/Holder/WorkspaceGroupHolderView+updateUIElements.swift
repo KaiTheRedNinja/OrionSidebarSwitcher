@@ -57,17 +57,19 @@ extension WorkspaceGroupHolderView {
     ///     c. Add the new workspace to this view, then animate it in
     ///     d. Delete views that are to be deleted, and are currently not shown
     /// 6. Update the UI state
-    func updateUIElements(
+    func updateUIElements( // swift lint:disable:this function_body_length
         actions: [WorkspaceGroupHolderAction],
         workspaces: [Workspace]
     ) {
+
         // --- 1. Determine the frame that the focused tab view should take up ---
         let focusedTabViewFrame = self.bounds
 
         // --- 2. Execute the actions ---
-        let (workspaceToShow, workspacesToRemove) = executeActions(
+        let (workspaceToShow, workspacesToRemove, isEndingPan) = executeActions(
             currentWorkspaceId: uiState.shownWorkspaceItem,
-            actions: actions
+            actions: actions,
+            workspaces: workspaces
         )
 
         // --- 5. Update the state ---
@@ -87,11 +89,20 @@ extension WorkspaceGroupHolderView {
               let workspaceToShowView = tabListViews.first(where: { $0.workspace.id == workspaceToShow })
         else { return }
 
+        // if we've ended panning, we figure out where the old workspace view is and then pan it in
+        // TODO: the above
+
         guard workspaceToShowIndex != currentWorkspaceIndex else {
             // --- 4. If the selected workspace has changed ---
 
             // the currently shown workspace has not changed. Simply update the frame of the workspace to show.
-            workspaceToShowView.frame = focusedTabViewFrame
+            let horizontalOffset = panHorizontalOffset ?? 0
+            workspaceToShowView.frame = .init(
+                x: focusedTabViewFrame.minX - horizontalOffset,
+                y: focusedTabViewFrame.minY,
+                width: focusedTabViewFrame.width,
+                height: focusedTabViewFrame.height
+            )
             return
         }
 
@@ -131,13 +142,16 @@ extension WorkspaceGroupHolderView {
 
     private func executeActions(
         currentWorkspaceId: Workspace.ID?,
-        actions: [WorkspaceGroupHolderAction]
+        actions: [WorkspaceGroupHolderAction],
+        workspaces: [Workspace]
     ) -> (
         workspaceToShow: Workspace.ID?,
-        workspacesToRemove: Set<Workspace.ID>
+        workspacesToRemove: Set<Workspace.ID>,
+        isEndingPan: Bool
     ) {
         var workspaceToShow = currentWorkspaceId
         var workspacesToRemove: Set<Workspace.ID> = []
+        var isEndingPan: Bool = false
         for action in actions {
             switch action {
             case let .workspaceSelected(workspaceId):
@@ -150,14 +164,29 @@ extension WorkspaceGroupHolderView {
                 tabListView.setup()
                 tabListViews.append(tabListView)
             case .panning:
-                // TODO: execute panning actions
-                break
+                // add the views for the workspaces to the left/right of the current workspace
+                guard let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == currentWorkspaceId })
+                else { continue }
+
+                // add the view on the left, if it exists
+                if currentWorkspaceIndex > 0,
+                   let leftView = tabListViews.first(where: {
+                       $0.workspace.id == workspaces[currentWorkspaceIndex - 1].id
+                   }) {
+                    addSubview(leftView)
+                }
+                // same with the one on the right
+                if currentWorkspaceIndex < workspaces.count - 1,
+                   let rightView = tabListViews.first(where: {
+                       $0.workspace.id == workspaces[currentWorkspaceIndex + 1].id
+                   }) {
+                    addSubview(rightView)
+                }
             case .panningEnd:
-                // TODO: execute panning end actions
-                break
+                isEndingPan = true
             }
         }
-        return (workspaceToShow, workspacesToRemove)
+        return (workspaceToShow, workspacesToRemove, isEndingPan)
     }
 
     private func workspaceFrames(
@@ -233,15 +262,20 @@ extension WorkspaceGroupHolderView {
     ) {
         // animate in the workspace to show
         // Add the new workspace to this view, out of frame
-        workspaceToShowView.frame = focusedTabViewFrame
-        workspaceToShowView.alphaValue = 0
+        workspaceToShowView.frame = newWorkspaceFrame
         addSubview(workspaceToShowView)
 
         // Animate in the new workspace
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = switchAnimationDuration
-            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            workspaceToShowView.animator().alphaValue = 1
+        // We delay it a bit so that the animation doesn't conflict with
+        // the frame assignment
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
+            guard let self else { return }
+
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = self.switchAnimationDuration
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                workspaceToShowView.animator().frame = focusedTabViewFrame
+            }
         }
     }
 

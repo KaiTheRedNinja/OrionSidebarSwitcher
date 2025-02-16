@@ -20,17 +20,19 @@ extension WorkspaceGroupHolderView {
         // can scroll using a mouse as well. We also invert it so that it matches natural
         // trackpad scrolling
         var totalDelta = (event.scrollingDeltaX + event.scrollingDeltaY) * -1
-        // if the selected workspace index is first, the totalDelta is not allowed to be negative
-        // if the selected workspace index is last, the totalDelta is not allowed to be positive
-        if selectedWorkspaceIndex == 0 {
-            totalDelta = max(0, totalDelta)
-        } else if selectedWorkspaceIndex == workspaces.count - 1 {
-            totalDelta = min(0, totalDelta)
-        }
-        panHorizontalOffset[default: 0] += totalDelta
 
         switch event.phase {
         case .began, .changed:
+            panHorizontalOffset[default: 0] += totalDelta
+
+            // if the selected workspace index is first, the pan is not allowed to be negative
+            // if the selected workspace index is last, the pan is not allowed to be positive
+            if selectedWorkspaceIndex == 0 {
+                panHorizontalOffset = max(0, panHorizontalOffset ?? 0)
+            } else if selectedWorkspaceIndex == workspaces.count - 1 {
+                panHorizontalOffset = min(0, panHorizontalOffset ?? 0)
+            }
+
             updateUIElements(actions: [.panning], workspaces: workspaces)
         case .ended:
             // if the panning offset is larger than half the width, we switch to the next view
@@ -43,7 +45,9 @@ extension WorkspaceGroupHolderView {
             // just reset
             panHorizontalOffset = nil
             updateUIElements(actions: [.panningEnd], workspaces: workspaces)
-        default: break
+        default:
+            // some other state that we don't care about, just reset the pan amount
+            panHorizontalOffset = nil
         }
     }
 

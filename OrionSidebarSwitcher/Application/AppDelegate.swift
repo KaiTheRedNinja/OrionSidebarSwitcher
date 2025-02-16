@@ -47,3 +47,13 @@ extension Optional {
         }
     }
 }
+
+extension Collection {
+    subscript(safe: Index) -> Element? {
+        if safe >= startIndex && safe < endIndex {
+            self[safe]
+        } else {
+            nil
+        }
+    }
+}
