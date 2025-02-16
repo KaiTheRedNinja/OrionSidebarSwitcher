@@ -27,7 +27,14 @@ class WorkspaceGroupHolderView: NSView {
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
         // set up the state
-        uiState = .init(shownWorkspaceItem: wsGroupManager.workspaceGroup.focusedWorkspaceID)
+        uiState = .init(shownWorkspaceItem: nil)
+
+        // Watch the list of workspaces
+        watch(
+            attribute: wsGroupManager.workspaceGroup.$workspaces,
+            storage: &workspacesOrderWatcher,
+            call: self.updateUIElementsForWorkspaceChanges()
+        )
 
         // Watch the currently focused workspace
         watch(
@@ -39,13 +46,6 @@ class WorkspaceGroupHolderView: NSView {
                 ],
                 workspaces: self.wsGroupManager.workspaceGroup.workspaces
             )
-        )
-
-        // Watch the list of workspaces
-        watch(
-            attribute: wsGroupManager.workspaceGroup.$workspaces,
-            storage: &workspacesOrderWatcher,
-            call: self.updateUIElementsForWorkspaceChanges()
         )
     }
 
@@ -80,6 +80,11 @@ class WorkspaceGroupHolderView: NSView {
         )
     }
 
+    override func layout() {
+        guard let wsGroupManager else { return }
+        updateUIElements(actions: [], workspaces: wsGroupManager.workspaceGroup.workspaces)
+    }
+
     /// Called to update the UI given a set of actions. This WILL NOT update the workspace group manager, and should
     /// be called AFTER the workspace group manager has been updated as it assumes that it is
     /// a reliable source of truth
@@ -97,10 +102,22 @@ class WorkspaceGroupHolderView: NSView {
     ///     d. After the animation, remove the old workspace from this view
     /// 4. Else, just resize the currently focused workspace
     /// 5. Update the UI state
-    func updateUIElements( // swiftlint:disable:this function_body_length cyclomatic_complexity
+    func updateUIElements( // swift lint:disable:this function_body_length cyclomatic_complexity
         actions: [WorkspaceGroupHolderAction],
         workspaces: [Workspace]
     ) {
+        print("------START------")
+        for action in actions {
+            switch action {
+            case .workspaceSelected(let wsId):
+                print("Workspace selected: \(workspaces.first(where: { $0.id == wsId })?.name ?? "not found")")
+            case .workspaceRemoved(let wsId):
+                print("Workspace removed: \(workspaces.first(where: { $0.id == wsId })?.name ?? "not found")")
+            case .workspaceAdded(let workspace, _):
+                print("Workspace added: \(workspace.name)")
+            }
+        }
+
         // --- 1. Determine the frame that the focused tab view should take up ---
         let focusedTabViewFrame = self.bounds
 
@@ -121,74 +138,89 @@ class WorkspaceGroupHolderView: NSView {
             }
         }
 
-        guard let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == uiState.shownWorkspaceItem }),
-              let workspaceToShowIndex = workspaces.firstIndex(where: { $0.id == workspaceToShow })
-        else {
-            return
-        }
+        print("Workspace to show: \(workspaces.first(where: { $0.id == workspaceToShow })?.name ?? "not found")")
+        print("-------END-------")
 
-        // --- 3. If the selected workspace has changed ---
-        if workspaceToShowIndex != currentWorkspaceIndex {
-            // Determine which direction the new workspace is coming from
-            let isComingFromRight = currentWorkspaceIndex < workspaceToShowIndex
-            let newWorkspaceFrame = CGRect(
-                x: isComingFromRight
-                    ? focusedTabViewFrame.maxX
-                    : focusedTabViewFrame.minX-focusedTabViewFrame.width,
-                y: 0,
-                width: focusedTabViewFrame.width,
-                height: focusedTabViewFrame.height
-            )
-            let oldWorkspaceFrame = CGRect(
-                x: !isComingFromRight
-                    ? focusedTabViewFrame.maxX
-                    : focusedTabViewFrame.minX-focusedTabViewFrame.width,
-                y: 0,
-                width: focusedTabViewFrame.width,
-                height: focusedTabViewFrame.height
-            )
-
-            for tabListView in tabListViews {
-                if tabListView.workspace.id == uiState.shownWorkspaceItem {
-                    // Animate out the old workspace
-                    NSAnimationContext.runAnimationGroup { context in
-                        context.duration = 1
-                        context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                        tabListView.animator().frame = oldWorkspaceFrame
-                    }
-                    // After the animation, remove the old workspace from this view
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-                        tabListView.removeFromSuperview()
-
-                        // if its to be removed, remove it completely
-                        if workspacesToRemove.contains(tabListView.workspace.id) {
-                            self?.tabListViews.removeAll { $0.workspace.id == tabListView.workspace.id }
-                        }
-                    }
-                } else if tabListView.workspace.id == workspaceToShow {
-                    // Add the new workspace to this view, out of frame
-                    tabListView.frame = newWorkspaceFrame
-                    addSubview(tabListView)
-
-                    // Animate in the new workspace
-                    NSAnimationContext.runAnimationGroup { context in
-                        context.duration = 1
-                        context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                        tabListView.animator().frame = focusedTabViewFrame
-                    }
-                } else if workspacesToRemove.contains(tabListView.workspace.id) {
-                    // workspace is to be removed immediately since it isn't shown at all
-                    tabListViews.removeAll { $0.workspace.id == tabListView.workspace.id }
-                }
-            }
-        }
+//        let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == uiState.shownWorkspaceItem })
+//
+//        // if the current workspace index doesn't exist, simply add it in and return
+//        guard let currentWorkspaceIndex else {
+//            if let currentWorkspace = tabListViews.first(where: { $0.workspace.id == workspaceToShow }) {
+//                addSubview(currentWorkspace)
+//                currentWorkspace.frame = focusedTabViewFrame
+//            }
+//            return
+//        }
+//
+//        guard let workspaceToShowIndex = workspaces.firstIndex(where: { $0.id == workspaceToShow })
+//        else {
+//            return
+//        }
+//
+//        // --- 3. If the selected workspace has changed ---
+//        guard workspaceToShowIndex != currentWorkspaceIndex else { return }
+//        // Determine which direction the new workspace is coming from
+//
+//        let isComingFromRight = currentWorkspaceIndex < workspaceToShowIndex
+//        let newWorkspaceFrame = CGRect(
+//            x: isComingFromRight
+//                ? focusedTabViewFrame.maxX
+//                : focusedTabViewFrame.minX-focusedTabViewFrame.width,
+//            y: 0,
+//            width: focusedTabViewFrame.width,
+//            height: focusedTabViewFrame.height
+//        )
+//        let oldWorkspaceFrame = CGRect(
+//            x: !isComingFromRight
+//                ? focusedTabViewFrame.maxX
+//                : focusedTabViewFrame.minX-focusedTabViewFrame.width,
+//            y: 0,
+//            width: focusedTabViewFrame.width,
+//            height: focusedTabViewFrame.height
+//        )
+//
+//        for tabListView in tabListViews {
+//            if tabListView.workspace.id == uiState.shownWorkspaceItem {
+//                // Animate out the old workspace
+//                NSAnimationContext.runAnimationGroup { context in
+//                    context.duration = 1
+//                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+//                    tabListView.animator().frame = oldWorkspaceFrame
+//                }
+//                // After the animation, remove the old workspace from this view
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+//                    tabListView.removeFromSuperview()
+//
+//                    // if its to be removed, remove it completely
+//                    if workspacesToRemove.contains(tabListView.workspace.id) {
+//                        self?.tabListViews.removeAll { $0.workspace.id == tabListView.workspace.id }
+//                    }
+//                }
+//            } else if tabListView.workspace.id == workspaceToShow {
+//                // Add the new workspace to this view, out of frame
+//                tabListView.frame = newWorkspaceFrame
+//                addSubview(tabListView)
+//
+//                // Animate in the new workspace
+//                NSAnimationContext.runAnimationGroup { context in
+//                    context.duration = 1
+//                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+//                    tabListView.animator().frame = focusedTabViewFrame
+//                }
+//            } else if workspacesToRemove.contains(tabListView.workspace.id) {
+//                // workspace is to be removed immediately since it isn't shown at all
+//                tabListViews.removeAll { $0.workspace.id == tabListView.workspace.id }
+//            }
+//        }
     }
 }
 
 /// An object that tracks the state of the workspace group holder's UI
 struct WorkspaceGroupHolderUIState: Equatable {
     /// The ID of the currently shown workspace item
-    var shownWorkspaceItem: Workspace.ID
+    ///
+    /// Can be nil if the view has not rendered the selected view yet
+    var shownWorkspaceItem: Workspace.ID?
 }
 
 /// An action triggerd by the workspace group holder's UI or the backend

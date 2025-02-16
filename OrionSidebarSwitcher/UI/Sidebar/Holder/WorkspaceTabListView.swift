@@ -19,5 +19,11 @@ class WorkspaceTabListView: NSView {
         layer?.backgroundColor = .init(red: 1, green: 0, blue: 0, alpha: 0.1)
         layer?.borderWidth = 4
         layer?.borderColor = NSColor.blue.cgColor
+
+        let textView = NSTextView()
+        textView.string = workspace.name
+        textView.textColor = .gray
+        addSubview(textView)
+        textView.frame = .init(x: 0, y: 0, width: 100, height: 100)
     }
 }
