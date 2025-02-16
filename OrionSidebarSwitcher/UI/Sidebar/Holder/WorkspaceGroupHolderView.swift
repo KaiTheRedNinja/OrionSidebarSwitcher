@@ -24,6 +24,9 @@ class WorkspaceGroupHolderView: NSView {
     /// The state that the UI is currently in. Should only be set by ``updateUIElements(actions:)``.
     var uiState: WorkspaceGroupHolderUIState!
 
+    /// The duration of the workspace switching animation
+    var switchAnimationDuration: TimeInterval = 0.3
+
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
         // set up the state

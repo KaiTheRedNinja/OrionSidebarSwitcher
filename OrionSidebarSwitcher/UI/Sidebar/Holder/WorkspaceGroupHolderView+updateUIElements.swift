@@ -202,12 +202,12 @@ extension WorkspaceGroupHolderView {
 
         // Animate out the old workspace
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 1
+            context.duration = switchAnimationDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             currentWorkspaceView.animator().frame = oldWorkspaceFrame
         }
         // After the animation, remove the old workspace from this view
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + switchAnimationDuration) { [weak self] in
             currentWorkspaceView.removeFromSuperview()
 
             // if its to be removed, remove it completely
@@ -229,7 +229,7 @@ extension WorkspaceGroupHolderView {
 
         // Animate in the new workspace
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 1
+            context.duration = switchAnimationDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             workspaceToShowView.animator().frame = focusedTabViewFrame
         }
