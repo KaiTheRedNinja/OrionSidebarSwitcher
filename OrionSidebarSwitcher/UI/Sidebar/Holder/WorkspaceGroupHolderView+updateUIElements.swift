@@ -206,14 +206,23 @@ extension WorkspaceGroupHolderView {
             width: focusedTabViewFrame.width,
             height: focusedTabViewFrame.height
         )
-        // the frame that the previewed view should take up
+        // the frame that the previewed view should take up. Forbidden from exiting the opposite end.
         let isPreviewingLeft = (panHorizontalOffset ?? uiState.horizontalOffset) < 0
-        let offsetFrame = CGRect(
-            x: focusedTabViewFrame.minX + focusedTabViewFrame.width*(isPreviewingLeft ? -1 : 1) - horizontalOffset,
+        let widthOffset: CGFloat = focusedTabViewFrame.width*(isPreviewingLeft ? -1 : 1)
+        var offsetFrame = CGRect(
+            x: focusedTabViewFrame.minX + widthOffset - horizontalOffset,
             y: focusedTabViewFrame.minY,
             width: focusedTabViewFrame.width,
             height: focusedTabViewFrame.height
         )
+        // prevent the preview from going too far
+        if isPreviewingLeft {
+            // is previewing the view to the left - therefore, it is forbidden to reach the right.
+            offsetFrame.origin.x = min(0, offsetFrame.origin.x)
+        } else {
+            // is previewing the view to the right - therefore, it is forbidden to reach the left.
+            offsetFrame.origin.x = max(0, offsetFrame.origin.x)
+        }
 
         // if we're ending a pan, we animate. Else, just snap
         guard !isResettingFromPan else {
