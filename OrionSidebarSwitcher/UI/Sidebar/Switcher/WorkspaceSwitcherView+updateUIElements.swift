@@ -55,20 +55,22 @@ extension WorkspaceSwitcherView {
     /// 4. For each workspace view (which currently includes both views to be removed and views to be added),
     ///     - If it is to be removed: Animate its frame changing to 0, then remove it
     ///     - Else: Animate it to the position and rendering style that it is meant to be
-    /// 5. If the selected item has changed, animate it shrinking then expanding back to normal size
-    /// 6. Update the UI state
+    ///     - The "click" icon's animation is settled by the icon view itself
+    /// 5. Update the UI state
     func updateUIElements(actions: [WorkspaceSwitcherAction], workspaces: [Workspace]) {
         // --- 1. Determine whether the sidebar is full enough to warrant switching to compact mode ---
+        let availableWidth = self.frame.width - 30 // make space for the + button
         let shouldBeCompact = shouldBeCompactGiven(
             workspaceCount: workspaces.count,
             minimumExpandedWidth: WorkspaceIconView.minimumExpandedWidth,
-            availableWidth: self.frame.width
+            availableWidth: availableWidth
         )
 
         // --- 2. For each workspace that still exists, calculate its new size/position within the sidebar ---
         let workspaceIconPositions = workspaceIconPositionsGiven(
             workspaces: workspaces,
-            maximumExpandedWidth: WorkspaceIconView.maximumExpandedWidth
+            maximumExpandedWidth: WorkspaceIconView.maximumExpandedWidth,
+            availableWidth: availableWidth
         )
 
         // --- 3. Execute the actions ---
@@ -96,10 +98,7 @@ extension WorkspaceSwitcherView {
             workspaceIconPositions: workspaceIconPositions
         )
 
-        // --- 5. If the selected item has changed, animate it shrinking then expanding back to normal size ---
-        // TODO: indicator for selected item changing
-
-        // --- 6. Update UI State
+        // --- 5. Update UI State
         self.uiState = .init(
             isCompact: shouldBeCompact,
             hoveredWorkspaceId: workspaceToHover,
@@ -120,20 +119,21 @@ extension WorkspaceSwitcherView {
 
     private func workspaceIconPositionsGiven(
         workspaces: [Workspace],
-        maximumExpandedWidth: CGFloat
+        maximumExpandedWidth: CGFloat,
+        availableWidth: CGFloat
     ) -> [Workspace.ID: CGRect] {
         // get the maximum width that all the workspaces can take up if they're all in expanded mode
         let maximumTotalWidth = CGFloat(workspaces.count) * maximumExpandedWidth
         // if the maximum width is smaller than the available width, we need to set the starting value a bit further
         // so that the icons are centered. If not, then they can start at the very left of the view.
-        let startingX: CGFloat = if maximumTotalWidth < self.frame.width {
-            (self.frame.width - maximumTotalWidth) / 2
+        let startingX: CGFloat = if maximumTotalWidth < availableWidth {
+            (availableWidth - maximumTotalWidth) / 2
         } else {
             0
         }
         let widthPerIcon: CGFloat = min(
             maximumExpandedWidth,
-            self.frame.width / CGFloat(workspaces.count)
+            availableWidth / CGFloat(workspaces.count)
         )
 
         // determine the width of each icon, given that they all take up the same width

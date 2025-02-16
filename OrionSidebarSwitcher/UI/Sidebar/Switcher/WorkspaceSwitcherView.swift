@@ -61,6 +61,7 @@ class WorkspaceSwitcherView: NSView {
     override func layout() {
         super.layout()
 
+        // update the separators
         for sublayer in layer?.sublayers ?? [] {
             switch sublayer.name {
             case "topBorder": sublayer.frame = CGRect(x: 0, y: bounds.height - 1, width: bounds.width*2, height: 1)
