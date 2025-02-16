@@ -59,7 +59,7 @@ extension WorkspaceSwitcherView {
     /// 5. Update the UI state
     func updateUIElements(actions: [WorkspaceSwitcherAction], workspaces: [Workspace]) {
         // --- 1. Determine whether the sidebar is full enough to warrant switching to compact mode ---
-        let availableWidth = self.frame.width - 30 // make space for the + button
+        let availableWidth = self.frame.width - 30 - 5 // make space for the + button and leading padding
         let shouldBeCompact = shouldBeCompactGiven(
             workspaceCount: workspaces.count,
             minimumExpandedWidth: WorkspaceIconView.minimumExpandedWidth,
@@ -67,8 +67,9 @@ extension WorkspaceSwitcherView {
         )
 
         // --- 2. For each workspace that still exists, calculate its new size/position within the sidebar ---
-        let workspaceIconPositions = workspaceIconPositionsGiven(
+        let (workspaceIconPositions, totalWidth) = workspaceIconPositionsGiven(
             workspaces: workspaces,
+            minimumCompactWidth: WorkspaceIconView.minimumCompactWidth,
             maximumExpandedWidth: WorkspaceIconView.maximumExpandedWidth,
             availableWidth: availableWidth
         )
@@ -98,13 +99,8 @@ extension WorkspaceSwitcherView {
             workspaceIconPositions: workspaceIconPositions
         )
 
-        // update the plus icon
-        addWorkspaceIconView.frame = .init(
-            x: self.frame.width - 30,
-            y: 0,
-            width: 30,
-            height: self.frame.height
-        )
+        // update the scroll view
+        updateOtherViews(totalWidth: totalWidth)
 
         // --- 5. Update UI State
         self.uiState = .init(
@@ -127,9 +123,13 @@ extension WorkspaceSwitcherView {
 
     private func workspaceIconPositionsGiven(
         workspaces: [Workspace],
+        minimumCompactWidth: CGFloat,
         maximumExpandedWidth: CGFloat,
         availableWidth: CGFloat
-    ) -> [Workspace.ID: CGRect] {
+    ) -> (
+        workspaceIconPositions: [Workspace.ID: CGRect],
+        totalWidth: CGFloat
+    ) {
         // get the maximum width that all the workspaces can take up if they're all in expanded mode
         let maximumTotalWidth = CGFloat(workspaces.count) * maximumExpandedWidth
         // if the maximum width is smaller than the available width, we need to set the starting value a bit further
@@ -139,12 +139,16 @@ extension WorkspaceSwitcherView {
         } else {
             0
         }
-        let widthPerIcon: CGFloat = min(
-            maximumExpandedWidth,
-            availableWidth / CGFloat(workspaces.count)
+
+        let widthPerIcon: CGFloat = max(
+            minimumCompactWidth,
+            min(
+                availableWidth / CGFloat(workspaces.count),
+                maximumExpandedWidth
+            )
         )
 
-        // determine the width of each icon, given that they all take up the same width
+        // determine the frames of each icon, given that they all take up the same width
         var workspaceIconPositions: [Workspace.ID: CGRect] = [:]
         var currentX = startingX
         for workspace in workspaces {
@@ -157,7 +161,11 @@ extension WorkspaceSwitcherView {
             currentX += widthPerIcon
         }
 
-        return workspaceIconPositions
+        // the total width is the sum of the widths of each icon, or the available
+        // width, whichever is larger
+        let totalWidth = max(availableWidth, widthPerIcon * CGFloat(workspaces.count))
+
+        return (workspaceIconPositions, totalWidth)
     }
 
     private func executeActions(
@@ -196,14 +204,14 @@ extension WorkspaceSwitcherView {
                 iconView.interactionDelegate = self
                 iconView.frame = .init(x: targetFrame.minX, y: 0, width: 0, height: frame.height)
                 self.workspaceIconViews.append(iconView)
-                self.addSubview(iconView)
+                self.scrollView.documentView?.addSubview(iconView)
             }
         }
 
         return (workspaceToHover, workspaceToSelect, workspacesToRemove)
     }
 
-    fileprivate func updateWorkspaceViews( // swiftlint:disable:this function_parameter_count
+    private func updateWorkspaceViews( // swiftlint:disable:this function_parameter_count
         workspacesToRemove: Set<Workspace.ID>,
         workspaceToSelect: Workspace.ID,
         workspaceToHover: Workspace.ID?,
@@ -249,5 +257,29 @@ extension WorkspaceSwitcherView {
 
             workspaceIconView.layout(renderingStyleChangedTo: targetRenderingStyle)
         }
+    }
+
+    private func updateOtherViews(
+        totalWidth: CGFloat
+    ) {
+        scrollView.documentView?.frame = .init(
+            x: 0,
+            y: 0,
+            width: totalWidth,
+            height: self.frame.height
+        )
+        scrollView.frame = .init(
+            x: 5,
+            y: 0,
+            width: self.frame.width - 30,
+            height: self.frame.height
+        )
+        // update the plus icon
+        addWorkspaceIconView.frame = .init(
+            x: self.frame.width - 30,
+            y: 0,
+            width: 30,
+            height: self.frame.height
+        )
     }
 }

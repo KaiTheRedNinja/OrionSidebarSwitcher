@@ -18,6 +18,8 @@ class WorkspaceSwitcherView: NSView {
     /// (eg. workspaces added, removed, rearranged)
     private var workspacesOrderWatcher: AnyCancellable?
 
+    /// The scroll view that contains the icon views
+    var scrollView: NSScrollView!
     /// A list of the icon views. The order does not correspond with the order of the workspaces.
     var workspaceIconViews: [WorkspaceIconView] = []
     /// The add workspace icon view
@@ -31,7 +33,24 @@ class WorkspaceSwitcherView: NSView {
         // Add the separators to the view
         addSeparators()
 
-        // add the workspace icon to the view
+        // Add the scroll view
+        scrollView = .init()
+        let scrollContentView = NSView()
+        scrollContentView.frame = .init(
+            x: 0,
+            y: 0,
+            width: self.frame.width,
+            height: self.frame.height
+        )
+        scrollView.documentView = scrollContentView
+        scrollView.hasHorizontalScroller = false
+        scrollView.hasVerticalScroller = false
+        scrollView.horizontalScrollElasticity = .allowed
+        scrollView.verticalScrollElasticity = .none
+        scrollView.contentView.drawsBackground = false
+        addSubview(scrollView)
+
+        // add the add workspace icon to the view
         addWorkspaceIconView = .init()
         addWorkspaceIconView.interactionDelegate = self
         addSubview(addWorkspaceIconView)

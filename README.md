@@ -10,6 +10,7 @@ Roughly based on the specifications at https://hackmd.io/@kagi/S1hXCgYFkg
 - [x] Top navigation stack to navigate between different workspaces.
     - [x] Add/remove workspace capability and animation
     - [x] Workspace icons collapse to dots when there’s less space available, and animate to full size on hover
+    - [x] When theres too many workspace items, scroll
 - [ ] Workspace content holder
     - [x] Smooth animation while switching to different workspace.
     - [ ] Pan gesture to swipe between workspaces.
