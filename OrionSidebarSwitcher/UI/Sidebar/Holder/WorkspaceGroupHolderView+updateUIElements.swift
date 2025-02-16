@@ -113,6 +113,9 @@ extension WorkspaceGroupHolderView {
         )
 
         // ----- c. Add the new workspace to this view, then animate it in -----
+        // NOTE: Although this code recieves information to "slide in" this new view, the brief
+        // shows the new view appearing in the correct position and simply going from 0 to 1 opacity.
+        // therefore, that is what this function does.
         animateInNewView(
             workspaceToShowView: workspaceToShowView,
             newWorkspaceFrame: newWorkspaceFrame,
@@ -224,14 +227,15 @@ extension WorkspaceGroupHolderView {
     ) {
         // animate in the workspace to show
         // Add the new workspace to this view, out of frame
-        workspaceToShowView.frame = newWorkspaceFrame
+        workspaceToShowView.frame = focusedTabViewFrame
+        workspaceToShowView.alphaValue = 0
         addSubview(workspaceToShowView)
 
         // Animate in the new workspace
         NSAnimationContext.runAnimationGroup { context in
             context.duration = switchAnimationDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            workspaceToShowView.animator().frame = focusedTabViewFrame
+            workspaceToShowView.animator().alphaValue = 1
         }
     }
 
