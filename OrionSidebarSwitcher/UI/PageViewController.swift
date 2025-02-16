@@ -16,13 +16,15 @@ class PageViewController: NSViewController {
     private var focusedWorkspaceChangeWatcher: AnyCancellable?
     /// The watcher that detects when the focused tab changes
     private var focusedTabChangeWatcher: AnyCancellable?
-    /// The watcher that detects when the focused tab's attributes change
-    private var focusedTabAttributeWatcher: AnyCancellable?
+    /// The watcher that detects when the focused tab's icon changes
+    private var focusedTabIconWatcher: AnyCancellable?
+    /// The watcher that detects when the focused tab's title changes
+    private var focusedTabTitleWatcher: AnyCancellable?
 
     /// The view responsible for showing the primary image
     private var imageView: NSImageView!
     /// The view responsible for showing the primary text
-    private var textView: NSTextView!
+    private var textView: NSText!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,7 +37,7 @@ class PageViewController: NSViewController {
         view.addSubview(imageView)
 
         // Create the text view
-        let label = NSTextView()
+        let label = NSText()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.alignment = .center
         label.backgroundColor = .clear
@@ -67,7 +69,8 @@ class PageViewController: NSViewController {
     deinit {
         focusedWorkspaceChangeWatcher?.cancel()
         focusedTabChangeWatcher?.cancel()
-        focusedTabAttributeWatcher?.cancel()
+        focusedTabIconWatcher?.cancel()
+        focusedTabTitleWatcher?.cancel()
     }
 
     /// Sets up the page view controller's listeners
@@ -93,8 +96,12 @@ class PageViewController: NSViewController {
                 else { return }
 
                 // Update the UI
-                imageView.image = selectedTab.icon
-                textView.string = selectedTab.name
+                watch(attribute: selectedTab.$icon, storage: &focusedTabIconWatcher) { [weak self] image in
+                    self?.imageView.image = image
+                }
+                watch(attribute: selectedTab.$name, storage: &focusedTabTitleWatcher) { [weak self] name in
+                    self?.textView.string = name
+                }
             }
         }
     }
