@@ -149,6 +149,12 @@ extension WorkspaceGroupHolderView {
                 tabListView.workspace = workspace
                 tabListView.setup()
                 tabListViews.append(tabListView)
+            case .panning:
+                // TODO: execute panning actions
+                break
+            case .panningEnd:
+                // TODO: execute panning end actions
+                break
             }
         }
         return (workspaceToShow, workspacesToRemove)

@@ -36,3 +36,14 @@ func watch<P: Publisher>(
         call(output)
     }
 }
+
+extension Optional {
+    subscript(default defaultValue: Wrapped) -> Wrapped {
+        get {
+            self ?? defaultValue
+        }
+        mutating set(newValue) {
+            self = newValue
+        }
+    }
+}

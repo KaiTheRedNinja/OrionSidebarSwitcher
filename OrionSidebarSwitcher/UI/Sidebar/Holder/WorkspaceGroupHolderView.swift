@@ -23,6 +23,9 @@ class WorkspaceGroupHolderView: NSView {
 
     /// The state that the UI is currently in. Should only be set by ``updateUIElements(actions:)``.
     var uiState: WorkspaceGroupHolderUIState!
+    /// The horizontal offset, in screen pixels, the views are, during a pan. Will be nil if no pan is
+    /// occuring.
+    var panHorizontalOffset: CGFloat?
 
     /// The duration of the workspace switching animation
     var switchAnimationDuration: TimeInterval = 0.3
@@ -76,4 +79,8 @@ enum WorkspaceGroupHolderAction {
     case workspaceRemoved(Workspace.ID)
     /// A workspace has been added at the given insertion point
     case workspaceAdded(Workspace, insertionIndex: Int)
+    /// The user is panning and revealing one of the next workspaces
+    case panning
+    /// The user has stopped panning
+    case panningEnd
 }
