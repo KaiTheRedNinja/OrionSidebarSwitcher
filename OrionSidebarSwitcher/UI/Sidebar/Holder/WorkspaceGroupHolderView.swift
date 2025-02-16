@@ -33,7 +33,7 @@ class WorkspaceGroupHolderView: NSView {
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
         // set up the state
-        uiState = .init(shownWorkspaceItem: nil)
+        uiState = .init(shownWorkspaceItem: nil, horizontalOffset: 0, panPreviewWorkspace: nil)
 
         // Watch the list of workspaces
         watch(
@@ -69,6 +69,10 @@ struct WorkspaceGroupHolderUIState: Equatable {
     ///
     /// Can be nil if the view has not rendered the selected view yet
     var shownWorkspaceItem: Workspace.ID?
+    /// The horizontal offset, in screen pixels, the views are currently offset by. Will be zero if no pan is active.
+    var horizontalOffset: CGFloat
+    /// The ID of the workspace view that is being "previewed" during a pan, if any
+    var panPreviewWorkspace: Workspace.ID?
 }
 
 /// An action triggerd by the workspace group holder's UI or the backend
@@ -81,6 +85,6 @@ enum WorkspaceGroupHolderAction {
     case workspaceAdded(Workspace, insertionIndex: Int)
     /// The user is panning and revealing one of the next workspaces
     case panning
-    /// The user has stopped panning
-    case panningEnd
+    /// The user has stopped panning and it did not result in switching workspace
+    case panningCancelled
 }

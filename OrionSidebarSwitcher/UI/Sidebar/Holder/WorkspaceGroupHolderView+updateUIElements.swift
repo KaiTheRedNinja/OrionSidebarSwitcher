@@ -50,14 +50,15 @@ extension WorkspaceGroupHolderView {
     ///     - `workspaceRemoved`: Delete the view for it
     ///     - `workspaceAdded`: Create a view for it
     /// 3. Determine if the selected workspace has changed
-    /// 4. If the selected workspace has not changed, just resize the currently focused workspace
+    /// 4. If the selected workspace has not changed, just resize the currently
+    /// focused workspace, or process any pans
     /// 5. Else (ie, the selected workspace HAS changed), animate it
     ///     a. Determine which direction the new workspace is coming from
     ///     b. Animate out the old workspace, then remove it from this view
     ///     c. Add the new workspace to this view, then animate it in
     ///     d. Delete views that are to be deleted, and are currently not shown
     /// 6. Update the UI state
-    func updateUIElements( // swift lint:disable:this function_body_length
+    func updateUIElements(
         actions: [WorkspaceGroupHolderAction],
         workspaces: [Workspace]
     ) {
@@ -66,15 +67,20 @@ extension WorkspaceGroupHolderView {
         let focusedTabViewFrame = self.bounds
 
         // --- 2. Execute the actions ---
-        let (workspaceToShow, workspacesToRemove, isEndingPan) = executeActions(
+        let (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan) = executeActions(
             currentWorkspaceId: uiState.shownWorkspaceItem,
             actions: actions,
+            panHorizontalOffset: panHorizontalOffset,
             workspaces: workspaces
         )
 
         // --- 5. Update the state ---
         defer {
-            uiState = .init(shownWorkspaceItem: workspaceToShow)
+            uiState = .init(
+                shownWorkspaceItem: workspaceToShow,
+                horizontalOffset: panHorizontalOffset ?? 0,
+                panPreviewWorkspace: workspaceToPreview
+            )
         }
 
         // --- 3. Determine if the selected workspace has changed ---
@@ -89,20 +95,16 @@ extension WorkspaceGroupHolderView {
               let workspaceToShowView = tabListViews.first(where: { $0.workspace.id == workspaceToShow })
         else { return }
 
-        // if we've ended panning, we figure out where the old workspace view is and then pan it in
-        // TODO: the above
-
         guard workspaceToShowIndex != currentWorkspaceIndex else {
-            // --- 4. If the selected workspace has changed ---
-
-            // the currently shown workspace has not changed. Simply update the frame of the workspace to show.
-            let horizontalOffset = panHorizontalOffset ?? 0
-            workspaceToShowView.frame = .init(
-                x: focusedTabViewFrame.minX - horizontalOffset,
-                y: focusedTabViewFrame.minY,
-                width: focusedTabViewFrame.width,
-                height: focusedTabViewFrame.height
+            // --- 4. If the selected workspace has not changed + pan processing ---
+            processPan(
+                isResettingFromPan: isResettingFromPan,
+                panHorizontalOffset: panHorizontalOffset,
+                workspaceToPreview: workspaceToPreview,
+                focusedTabViewFrame: focusedTabViewFrame,
+                workspaceToShowView: workspaceToShowView
             )
+
             return
         }
 
@@ -143,15 +145,19 @@ extension WorkspaceGroupHolderView {
     private func executeActions(
         currentWorkspaceId: Workspace.ID?,
         actions: [WorkspaceGroupHolderAction],
+        panHorizontalOffset: CGFloat?,
         workspaces: [Workspace]
     ) -> (
         workspaceToShow: Workspace.ID?,
+        workspaceToPreview: Workspace.ID?,
         workspacesToRemove: Set<Workspace.ID>,
-        isEndingPan: Bool
+        isResettingFromPan: Bool
     ) {
         var workspaceToShow = currentWorkspaceId
+        var workspaceToPreview: Workspace.ID?
         var workspacesToRemove: Set<Workspace.ID> = []
-        var isEndingPan: Bool = false
+        var isResettingFromPan: Bool = false
+
         for action in actions {
             switch action {
             case let .workspaceSelected(workspaceId):
@@ -165,28 +171,83 @@ extension WorkspaceGroupHolderView {
                 tabListViews.append(tabListView)
             case .panning:
                 // add the views for the workspaces to the left/right of the current workspace
-                guard let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == currentWorkspaceId })
+                guard let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == currentWorkspaceId }),
+                      let panHorizontalOffset
                 else { continue }
 
-                // add the view on the left, if it exists
-                if currentWorkspaceIndex > 0,
-                   let leftView = tabListViews.first(where: {
-                       $0.workspace.id == workspaces[currentWorkspaceIndex - 1].id
-                   }) {
-                    addSubview(leftView)
+                // if there is a view on the left, and the preview is towards that direction, mark it
+                if currentWorkspaceIndex > 0 && panHorizontalOffset < 0 {
+                    workspaceToPreview = workspaces[currentWorkspaceIndex - 1].id
                 }
                 // same with the one on the right
-                if currentWorkspaceIndex < workspaces.count - 1,
-                   let rightView = tabListViews.first(where: {
-                       $0.workspace.id == workspaces[currentWorkspaceIndex + 1].id
-                   }) {
-                    addSubview(rightView)
+                if currentWorkspaceIndex < workspaces.count - 1 && panHorizontalOffset > 0 {
+                    workspaceToPreview = workspaces[currentWorkspaceIndex + 1].id
                 }
-            case .panningEnd:
-                isEndingPan = true
+            case .panningCancelled:
+                isResettingFromPan = true
             }
         }
-        return (workspaceToShow, workspacesToRemove, isEndingPan)
+        return (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan)
+    }
+
+    private func processPan(
+        isResettingFromPan: Bool,
+        panHorizontalOffset: CGFloat?,
+        workspaceToPreview: Workspace.ID?,
+        focusedTabViewFrame: CGRect,
+        workspaceToShowView: WorkspaceTabListView
+    ) {
+        // the currently shown workspace has not changed. Simply update the frame of the workspace to show.
+        let horizontalOffset = panHorizontalOffset ?? 0
+        // the frame that the currently focused view should take up
+        let targetFrame = CGRect(
+            x: focusedTabViewFrame.minX - horizontalOffset,
+            y: focusedTabViewFrame.minY,
+            width: focusedTabViewFrame.width,
+            height: focusedTabViewFrame.height
+        )
+        // the frame that the previewed view should take up
+        let isPreviewingLeft = (panHorizontalOffset ?? uiState.horizontalOffset) < 0
+        let offsetFrame = CGRect(
+            x: focusedTabViewFrame.minX + focusedTabViewFrame.width*(isPreviewingLeft ? -1 : 1) - horizontalOffset,
+            y: focusedTabViewFrame.minY,
+            width: focusedTabViewFrame.width,
+            height: focusedTabViewFrame.height
+        )
+
+        // if we're ending a pan, we animate. Else, just snap
+        guard !isResettingFromPan else {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = switchAnimationDuration
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                workspaceToShowView.animator().frame = targetFrame
+
+                // move the previewed window towards the direction its meant to go
+                tabListViews.first {
+                    $0.workspace.id == uiState.panPreviewWorkspace
+                }?.animator().frame = offsetFrame
+            }
+
+            return
+        }
+
+        // if the workspace to preview is different from the currently previewed view, remove it
+        if workspaceToPreview != uiState.panPreviewWorkspace {
+            tabListViews.first {
+                $0.workspace.id == uiState.panPreviewWorkspace
+            }?.removeFromSuperview()
+        }
+
+        // if theres a workspace to preview, add it to this view and frame it
+        if let workspaceToPreview = workspaceToPreview, let previewView = tabListViews.first(where: {
+            $0.workspace.id == workspaceToPreview
+        }) {
+            addSubview(previewView)
+            previewView.frame = offsetFrame
+        }
+
+        // position the target view
+        workspaceToShowView.frame = targetFrame
     }
 
     private func workspaceFrames(
@@ -261,9 +322,11 @@ extension WorkspaceGroupHolderView {
         focusedTabViewFrame: CGRect
     ) {
         // animate in the workspace to show
-        // Add the new workspace to this view, out of frame
-        workspaceToShowView.frame = newWorkspaceFrame
-        addSubview(workspaceToShowView)
+        // Add the new workspace to this view, out of frame, if it isn't already
+        if workspaceToShowView.superview == nil {
+            workspaceToShowView.frame = newWorkspaceFrame
+            addSubview(workspaceToShowView)
+        }
 
         // Animate in the new workspace
         // We delay it a bit so that the animation doesn't conflict with

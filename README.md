@@ -13,7 +13,7 @@ Roughly based on the specifications at https://hackmd.io/@kagi/S1hXCgYFkg
     - [x] When theres too many workspace items, scroll
 - [ ] Workspace content holder
     - [x] Smooth animation while switching to different workspace.
-    - [ ] Pan gesture to swipe between workspaces.
+    - [x] Pan gesture to swipe between workspaces.
     - [ ] Pinned tabs
     - [ ] Normal tabs
     - [ ] Indicator for current tab
