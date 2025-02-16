@@ -16,7 +16,10 @@ extension WorkspaceGroupHolderView {
             })
         else { return }
 
-        var totalDelta = event.deltaX + event.deltaY
+        // determine the total delta, the sum of both axis. This is so that the user
+        // can scroll using a mouse as well. We also invert it so that it matches natural
+        // trackpad scrolling
+        var totalDelta = (event.scrollingDeltaX + event.scrollingDeltaY) * -1
         // if the selected workspace index is first, the totalDelta is not allowed to be negative
         // if the selected workspace index is last, the totalDelta is not allowed to be positive
         if selectedWorkspaceIndex == 0 {
