@@ -17,7 +17,7 @@ class WorkspaceTabListView: NSView {
     var titleView: NSTextField!
 
     /// The view containing the pinned tabs
-    var pinnedTabsView: NSView!
+    var pinnedTabsView: WorkspacePinnedTabsView!
 
     /// The view containing the normal tabs
     var normalTabsView: NSView!
@@ -38,9 +38,9 @@ class WorkspaceTabListView: NSView {
         titleView.usesSingleLineMode = true
         addSubview(titleView)
 
-        self.pinnedTabsView = NSView()
-        pinnedTabsView.wantsLayer = true
-        pinnedTabsView.layer?.backgroundColor = .init(red: 0, green: 1, blue: 0, alpha: 1)
+        self.pinnedTabsView = WorkspacePinnedTabsView()
+        pinnedTabsView.pinnedTabs = workspace.pinnedTabs
+        pinnedTabsView.setup()
         addSubview(pinnedTabsView)
 
         self.normalTabsView = NSView()
@@ -52,29 +52,31 @@ class WorkspaceTabListView: NSView {
     override func layout() {
         // title view at the top. We do manual adjustment so that
         // the view appears vertically centered
-        let titleViewHeight: CGFloat = 15
-        let titleViewVerticalSpace: CGFloat = 20
+        let titleViewTextHeight: CGFloat = 15
+        let titleViewHeight: CGFloat = 20
         titleView.frame = .init(
             x: 0,
-            y: (titleViewVerticalSpace-titleViewHeight)/2,
+            y: (titleViewHeight-titleViewTextHeight)/2,
             width: self.bounds.width,
-            height: titleViewHeight
+            height: titleViewTextHeight
         )
 
         // pinned tabs view right below
+        let pinnedTabsViewHeight = pinnedTabsView.idealHeight(forWidth: bounds.width)
         pinnedTabsView.frame = .init(
             x: 0,
-            y: titleViewVerticalSpace,
+            y: titleViewHeight,
             width: self.bounds.width,
-            height: 100
+            height: pinnedTabsViewHeight
         )
+        pinnedTabsView.layout()
 
         // normal tabs view all the way down
         normalTabsView.frame = .init(
             x: 0,
-            y: titleViewVerticalSpace + 100,
+            y: titleViewHeight + pinnedTabsViewHeight,
             width: self.bounds.width,
-            height: self.bounds.height - 100 - titleViewVerticalSpace
+            height: self.bounds.height - pinnedTabsViewHeight - titleViewHeight
         )
     }
 }

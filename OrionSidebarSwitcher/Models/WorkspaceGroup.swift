@@ -54,7 +54,9 @@ class WorkspaceGroup: Identifiable, ObservableObject {
                 .init(
                     name: "MacBook",
                     icon: .init(systemSymbolName: "macbook", accessibilityDescription: "Tab Icon")!,
-                    pinnedTabs: [],
+                    pinnedTabs: [
+                        .init(name: "Test", icon: TabItem.defaultIcon)
+                    ],
                     regularTabs: [
                         .init(name: "Reviews", icon: TabItem.defaultIcon),
                         .init(name: "Comparisons", icon: TabItem.defaultIcon)
