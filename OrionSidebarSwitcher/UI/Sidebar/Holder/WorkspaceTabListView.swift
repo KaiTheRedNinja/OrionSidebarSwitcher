@@ -15,14 +15,13 @@ class WorkspaceTabListView: NSView {
 
     /// The text label for the workspace's title
     var titleView: NSTextField!
-
     /// The view containing the pinned tabs
     var pinnedTabsView: WorkspacePinnedTabsView!
-
     /// The view containing the normal tabs
     var normalTabsView: NSView!
 
-    override var isFlipped: Bool { true }
+    /// How much padding the contents have between the edge of the view, and each other
+    var padding: CGFloat = 6
 
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
@@ -49,34 +48,39 @@ class WorkspaceTabListView: NSView {
         addSubview(normalTabsView)
     }
 
+    override var isFlipped: Bool { true }
+
     override func layout() {
+        // How wide the content is, accounting for padding
+        let contentWidth = self.bounds.width - padding*2
+
         // title view at the top. We do manual adjustment so that
         // the view appears vertically centered
         let titleViewTextHeight: CGFloat = 15
-        let titleViewHeight: CGFloat = 20
+        let titleViewHeight: CGFloat = 18
         titleView.frame = .init(
-            x: 0,
-            y: (titleViewHeight-titleViewTextHeight)/2,
-            width: self.bounds.width,
+            x: padding,
+            y: (titleViewHeight-titleViewTextHeight)/2 + padding,
+            width: contentWidth,
             height: titleViewTextHeight
         )
 
         // pinned tabs view right below
-        let pinnedTabsViewHeight = pinnedTabsView.idealHeight(forWidth: bounds.width)
+        let pinnedTabsViewHeight = pinnedTabsView.idealHeight(forWidth: contentWidth)
         pinnedTabsView.frame = .init(
-            x: 0,
-            y: titleViewHeight,
-            width: self.bounds.width,
+            x: padding,
+            y: titleView.frame.maxY + padding,
+            width: contentWidth,
             height: pinnedTabsViewHeight
         )
         pinnedTabsView.layout()
 
         // normal tabs view all the way down
         normalTabsView.frame = .init(
-            x: 0,
-            y: titleViewHeight + pinnedTabsViewHeight,
-            width: self.bounds.width,
-            height: self.bounds.height - pinnedTabsViewHeight - titleViewHeight
+            x: padding,
+            y: pinnedTabsView.frame.maxY + padding,
+            width: contentWidth,
+            height: self.bounds.height - pinnedTabsView.frame.maxY - padding
         )
     }
 }

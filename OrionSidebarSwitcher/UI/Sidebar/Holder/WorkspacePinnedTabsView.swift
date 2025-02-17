@@ -13,6 +13,9 @@ class WorkspacePinnedTabsView: NSView {
 
     var pinnedTabViews: [PinnedTabView] = []
 
+    /// How much spacing the contents have between each other
+    var padding: CGFloat = 3
+
     func setup() {
         // create the pinned tab views
         for tab in pinnedTabs {
@@ -43,24 +46,32 @@ class WorkspacePinnedTabsView: NSView {
     func updateUIElements() {
         guard let pinnedTabs else { return }
 
+        let tabItemPaddedHeight: CGFloat = PinnedTabView.tabItemHeight + padding
+
         let columns = columnCount(forWidth: frame.width)
         for (index, pinnedTab) in pinnedTabs.enumerated() {
             let column = index%columns
             let row = index/columns
             let targetFrame = CGRect(
-                x: PinnedTabView.tabItemHeight * CGFloat(column),
-                y: PinnedTabView.tabItemHeight * CGFloat(row),
+                x: tabItemPaddedHeight * CGFloat(column),
+                y: tabItemPaddedHeight * CGFloat(row),
                 width: PinnedTabView.tabItemHeight,
                 height: PinnedTabView.tabItemHeight
             )
+            guard let targetTabView = pinnedTabViews
+                .first(where: { $0.tabItem.id == pinnedTab.id })
+            else { continue }
 
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.3
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                pinnedTabViews
-                    .first { $0.tabItem.id == pinnedTab.id }?
-                    .animator()
-                    .frame = targetFrame
+            if targetTabView.frame == .zero {
+                // the tab view hasn't been set up yet, so move it immediately
+                targetTabView.frame = targetFrame
+            } else {
+                // animate it smoothly
+                NSAnimationContext.runAnimationGroup { context in
+                    context.duration = 0.3
+                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                    targetTabView.animator().frame = targetFrame
+                }
             }
         }
     }
@@ -68,7 +79,7 @@ class WorkspacePinnedTabsView: NSView {
     private func columnCount(forWidth width: CGFloat) -> Int {
         // The number of columns is largest whole
         // number of tab items it can fit horizontally
-        Int(width/PinnedTabView.tabItemHeight)
+        Int(width/(PinnedTabView.tabItemHeight+padding))
     }
 }
 
