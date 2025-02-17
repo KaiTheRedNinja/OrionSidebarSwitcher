@@ -145,19 +145,11 @@ extension WorkspaceSwitcherView: WorkspaceIconInteractionDelegate {
     func workspaceIconMouseClicked(_ workspaceId: Workspace.ID) {
         guard let wsGroupManager else { return }
         wsGroupManager.focus(workspaceWithId: workspaceId)
-        updateUIElements(
-            actions: [.workspaceSelected(workspaceId)],
-            workspaces: wsGroupManager.workspaceGroup.workspaces
-        )
     }
 
     func workspaceDeleteRequested(_ workspaceId: Workspace.ID) {
         guard let wsGroupManager else { return }
         wsGroupManager.delete(workspaceWithId: workspaceId)
-        updateUIElements(
-            actions: [.workspaceRemoved(workspaceId)],
-            workspaces: wsGroupManager.workspaceGroup.workspaces
-        )
     }
 }
 
