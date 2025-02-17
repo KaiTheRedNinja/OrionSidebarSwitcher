@@ -82,15 +82,3 @@ class WorkspacePinnedTabsView: NSView {
         Int(width/(PinnedTabView.tabItemHeight+padding))
     }
 }
-
-class PinnedTabView: NSView {
-    var tabItem: TabItem!
-
-    static let tabItemHeight: CGFloat = 40
-
-    func setup() {
-        wantsLayer = true
-        layer?.borderWidth = 1
-        layer?.borderColor = .init(red: 1, green: 1, blue: 0, alpha: 1)
-    }
-}

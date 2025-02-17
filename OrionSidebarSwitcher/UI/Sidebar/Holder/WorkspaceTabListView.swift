@@ -67,20 +67,45 @@ class WorkspaceTabListView: NSView {
 
         // pinned tabs view right below
         let pinnedTabsViewHeight = pinnedTabsView.idealHeight(forWidth: contentWidth)
-        pinnedTabsView.frame = .init(
+        let pinnedTabsTargetFrame = CGRect(
             x: padding,
             y: titleView.frame.maxY + padding,
             width: contentWidth,
             height: pinnedTabsViewHeight
         )
+        // if the height changed, thats likely because the number of rows changed. Therefore, we animate.
+        let animateFrameChange = (
+            pinnedTabsView.frame.height != pinnedTabsTargetFrame.height &&  // height changed
+            pinnedTabsView.frame.height != 0                                // height wasn't 0
+        )
+        pinnedTabsView.frame.size.width = pinnedTabsTargetFrame.width
+        if animateFrameChange {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.3
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                pinnedTabsView.animator().frame = pinnedTabsTargetFrame
+            }
+        } else {
+            pinnedTabsView.frame = pinnedTabsTargetFrame
+        }
         pinnedTabsView.layout()
 
         // normal tabs view all the way down
-        normalTabsView.frame = .init(
+        let normalTabsTargetFrame = CGRect(
             x: padding,
             y: pinnedTabsView.frame.maxY + padding,
             width: contentWidth,
             height: self.bounds.height - pinnedTabsView.frame.maxY - padding
         )
+        normalTabsView.frame.size.width = normalTabsTargetFrame.width
+        if animateFrameChange {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.3
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                normalTabsView.animator().frame = normalTabsTargetFrame
+            }
+        } else {
+            normalTabsView.frame = normalTabsTargetFrame
+        }
     }
 }
