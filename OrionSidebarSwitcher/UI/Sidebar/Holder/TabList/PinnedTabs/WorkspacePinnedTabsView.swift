@@ -29,6 +29,8 @@ class WorkspacePinnedTabsView: NSView {
             pinnedTabViews.append(pinnedTabView)
             self.addSubview(pinnedTabView)
         }
+
+        updateUIElements()
     }
 
     func idealHeight(forWidth width: CGFloat) -> CGFloat {
@@ -54,6 +56,18 @@ class WorkspacePinnedTabsView: NSView {
 
         let columns = columnCount(forWidth: frame.width)
         for (index, pinnedTab) in pinnedTabs.enumerated() {
+            guard let targetTabView = pinnedTabViews
+                .first(where: { $0.tabItem.id == pinnedTab.id })
+            else { continue }
+
+            // update the tab's selection state
+            targetTabView.isSelected = pinnedTab.id == selectedTab
+            targetTabView.updateUIElements()
+
+            // there must be enough space to display pinned tabs
+            guard columns > 0 else { continue }
+
+            // calculate the position of the view
             let column = index%columns
             let row = index/columns
             let targetFrame = CGRect(
@@ -62,10 +76,8 @@ class WorkspacePinnedTabsView: NSView {
                 width: PinnedTabView.tabItemHeight,
                 height: PinnedTabView.tabItemHeight
             )
-            guard let targetTabView = pinnedTabViews
-                .first(where: { $0.tabItem.id == pinnedTab.id })
-            else { continue }
 
+            // move the view to its new position, animating if needed
             if targetTabView.frame == .zero {
                 // the tab view hasn't been set up yet, so move it immediately
                 targetTabView.frame = targetFrame

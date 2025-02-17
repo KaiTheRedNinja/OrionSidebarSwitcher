@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import Combine
 
 /// A view that contains the contents of a workspace tab
 class WorkspaceTabListView: NSView {
@@ -14,6 +15,9 @@ class WorkspaceTabListView: NSView {
     var workspace: Workspace!
     /// The interaction delegate
     var interactionDelegate: WorkspaceTabListInteractionDelegate?
+
+    /// The watcher that watches for when the selected tab changes
+    var selectedTabWatcher: AnyCancellable?
 
     /// The text label for the workspace's title
     var titleView: NSTextField!
@@ -49,6 +53,15 @@ class WorkspaceTabListView: NSView {
         normalTabsView.wantsLayer = true
         normalTabsView.layer?.backgroundColor = .init(red: 0, green: 0, blue: 1, alpha: 1)
         addSubview(normalTabsView)
+
+        watch(
+            attribute: workspace.$selectedTabId,
+            storage: &selectedTabWatcher
+        ) { [weak self] selectedTab in
+            guard let self else { return }
+            pinnedTabsView.selectedTab = selectedTab
+            pinnedTabsView.updateUIElements()
+        }
     }
 
     override var isFlipped: Bool { true }

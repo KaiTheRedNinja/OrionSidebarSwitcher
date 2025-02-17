@@ -24,7 +24,6 @@ class PinnedTabView: NSView {
 
     func setup() {
         wantsLayer = true
-        layer?.backgroundColor = NSColor.separatorColor.cgColor
         layer?.cornerRadius = 6
 
         // Create the icon view
@@ -51,6 +50,14 @@ class PinnedTabView: NSView {
                 self.iconView.image = image
             }
         )
+    }
+
+    func updateUIElements() {
+        if isSelected {
+            layer?.backgroundColor = NSColor.controlAccentColor.cgColor.copy(alpha: 0.5)
+        } else {
+            layer?.backgroundColor = NSColor.gray.cgColor.copy(alpha: 0.2)
+        }
     }
 
     override func mouseUp(with event: NSEvent) {
