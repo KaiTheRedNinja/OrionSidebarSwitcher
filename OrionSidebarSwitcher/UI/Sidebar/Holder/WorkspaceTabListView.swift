@@ -32,13 +32,10 @@ class WorkspaceTabListView: NSView {
         titleView.backgroundColor = .clear
         titleView.isEditable = false
         titleView.font = .boldSystemFont(ofSize: 12)
-        titleView.translatesAutoresizingMaskIntoConstraints = false
-        titleView.drawsBackground = false
         titleView.isBordered = false
         titleView.isSelectable = false
         titleView.lineBreakMode = .byTruncatingMiddle
         titleView.usesSingleLineMode = true
-        titleView.maximumNumberOfLines = 0
         addSubview(titleView)
 
         self.pinnedTabsView = NSView()
@@ -53,12 +50,13 @@ class WorkspaceTabListView: NSView {
     }
 
     override func layout() {
-        let titleViewHeight: CGFloat = 30
-
-        // title view at the top
+        // title view at the top. We do manual adjustment so that
+        // the view appears vertically centered
+        let titleViewHeight: CGFloat = 15
+        let titleViewVerticalSpace: CGFloat = 20
         titleView.frame = .init(
             x: 0,
-            y: 0,
+            y: (titleViewVerticalSpace-titleViewHeight)/2,
             width: self.bounds.width,
             height: titleViewHeight
         )
@@ -66,7 +64,7 @@ class WorkspaceTabListView: NSView {
         // pinned tabs view right below
         pinnedTabsView.frame = .init(
             x: 0,
-            y: titleViewHeight,
+            y: titleViewVerticalSpace,
             width: self.bounds.width,
             height: 100
         )
@@ -74,9 +72,9 @@ class WorkspaceTabListView: NSView {
         // normal tabs view all the way down
         normalTabsView.frame = .init(
             x: 0,
-            y: titleViewHeight + 100,
+            y: titleViewVerticalSpace + 100,
             width: self.bounds.width,
-            height: self.bounds.height - 100 - titleViewHeight
+            height: self.bounds.height - 100 - titleViewVerticalSpace
         )
     }
 }
