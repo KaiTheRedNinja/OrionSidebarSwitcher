@@ -55,7 +55,11 @@ class WorkspaceGroup: Identifiable, ObservableObject {
                     name: "MacBook",
                     icon: .init(systemSymbolName: "macbook", accessibilityDescription: "Tab Icon")!,
                     pinnedTabs: [
-                        .init(name: "Test", icon: TabItem.defaultIcon)
+                        .init(name: "Tim Cook", icon: TabItem.defaultIcon),
+                        .init(name: "Hair Force One", icon: TabItem.defaultIcon),
+                        .init(name: "Jony Ive", icon: TabItem.defaultIcon),
+                        .init(name: "Steve Jobs", icon: TabItem.defaultIcon),
+                        .init(name: "Woz", icon: TabItem.defaultIcon)
                     ],
                     regularTabs: [
                         .init(name: "Reviews", icon: TabItem.defaultIcon),

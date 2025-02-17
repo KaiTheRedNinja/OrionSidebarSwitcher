@@ -38,6 +38,8 @@ class WorkspacePinnedTabsView: NSView {
         updateUIElements()
     }
 
+    override var isFlipped: Bool { true }
+
     func updateUIElements() {
         guard let pinnedTabs else { return }
 
@@ -45,12 +47,21 @@ class WorkspacePinnedTabsView: NSView {
         for (index, pinnedTab) in pinnedTabs.enumerated() {
             let column = index%columns
             let row = index/columns
-            pinnedTabViews.first { $0.tabItem.id == pinnedTab.id }?.frame = .init(
+            let targetFrame = CGRect(
                 x: PinnedTabView.tabItemHeight * CGFloat(column),
                 y: PinnedTabView.tabItemHeight * CGFloat(row),
                 width: PinnedTabView.tabItemHeight,
                 height: PinnedTabView.tabItemHeight
             )
+
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.3
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                pinnedTabViews
+                    .first { $0.tabItem.id == pinnedTab.id }?
+                    .animator()
+                    .frame = targetFrame
+            }
         }
     }
 
