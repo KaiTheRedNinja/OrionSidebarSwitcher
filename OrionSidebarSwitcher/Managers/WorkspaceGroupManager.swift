@@ -87,4 +87,13 @@ class WorkspaceGroupManager {
             focus(workspaceWithId: workspace.id)
         }
     }
+
+    /// Selects the given tab in the given workspace
+    func select(tabWithId tabId: TabItem.ID, inWorkspaceWithId workspaceId: Workspace.ID) {
+        guard let workspaceIndex = workspaceGroup.workspaces
+            .firstIndex(where: { $0.id == workspaceId })
+        else { return }
+
+        workspaceGroup.workspaces[workspaceIndex].selectedTabId = tabId
+    }
 }

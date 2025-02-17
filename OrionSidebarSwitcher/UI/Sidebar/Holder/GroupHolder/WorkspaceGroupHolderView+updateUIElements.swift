@@ -167,6 +167,7 @@ extension WorkspaceGroupHolderView {
             case let .workspaceAdded(workspace, _):
                 let tabListView = WorkspaceTabListView()
                 tabListView.workspace = workspace
+                tabListView.interactionDelegate = self
                 tabListView.setup()
                 tabListViews.append(tabListView)
             case .panning:

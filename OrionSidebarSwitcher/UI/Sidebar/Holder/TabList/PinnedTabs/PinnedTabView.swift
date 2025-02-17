@@ -12,11 +12,14 @@ class PinnedTabView: NSView {
     var tabItem: TabItem!
     var isSelected: Bool!
 
+    var interactionDelegate: TabInteractionDelegate?
+
     /// The watcher for when the tab's icon changes
     private var tabIconWatcher: AnyCancellable?
     /// The view used to display the tab's icon
     private var iconView: NSImageView!
 
+    /// How tall each tab item is
     static let tabItemHeight: CGFloat = 40
 
     func setup() {
@@ -48,5 +51,9 @@ class PinnedTabView: NSView {
                 self.iconView.image = image
             }
         )
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        interactionDelegate?.tabWasPressed(tabId: tabItem.id)
     }
 }

@@ -12,6 +12,8 @@ class WorkspaceTabListView: NSView {
     /// The workspace that this view lists tabs for. This is a strong reference so that we can still access the ID
     /// after the workspace is removed from the manager.
     var workspace: Workspace!
+    /// The interaction delegate
+    var interactionDelegate: WorkspaceTabListInteractionDelegate?
 
     /// The text label for the workspace's title
     var titleView: NSTextField!
@@ -39,6 +41,7 @@ class WorkspaceTabListView: NSView {
 
         self.pinnedTabsView = WorkspacePinnedTabsView()
         pinnedTabsView.pinnedTabs = workspace.pinnedTabs
+        pinnedTabsView.interactionDelegate = self
         pinnedTabsView.setup()
         addSubview(pinnedTabsView)
 
@@ -108,4 +111,25 @@ class WorkspaceTabListView: NSView {
             normalTabsView.frame = normalTabsTargetFrame
         }
     }
+}
+
+extension WorkspaceTabListView: TabInteractionDelegate {
+    func tabWasPressed(tabId: TabItem.ID) {
+        interactionDelegate?.tabWasPressed(tabId: tabId, inWorkspaceId: workspace.id)
+    }
+}
+
+// Note: This interaction delegate is located within this file because its used
+// in almost every tab-related file and the WorkspaceTabListView is the logical
+// root of all of them
+/// A delegate which is informed of interactions within the tab
+protocol TabInteractionDelegate: AnyObject {
+    /// Informs the delegate that the given tab has been selected
+    func tabWasPressed(tabId: TabItem.ID)
+}
+
+/// A delegate which is informed of interactions within the tab list
+protocol WorkspaceTabListInteractionDelegate: AnyObject {
+    /// Informs the delegate that the given tab in the given workspace has been selected
+    func tabWasPressed(tabId: TabItem.ID, inWorkspaceId workspaceId: Workspace.ID)
 }

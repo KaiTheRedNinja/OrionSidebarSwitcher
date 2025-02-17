@@ -13,6 +13,9 @@ class WorkspacePinnedTabsView: NSView {
 
     var pinnedTabViews: [PinnedTabView] = []
 
+    /// The interaction delegate, which is forwarded interactions from the tabs
+    var interactionDelegate: TabInteractionDelegate?
+
     /// How much spacing the contents have between each other
     var padding: CGFloat = 3
 
@@ -22,6 +25,7 @@ class WorkspacePinnedTabsView: NSView {
             let pinnedTabView = PinnedTabView()
             pinnedTabView.tabItem = tab
             pinnedTabView.setup()
+            pinnedTabView.interactionDelegate = interactionDelegate
             pinnedTabViews.append(pinnedTabView)
             self.addSubview(pinnedTabView)
         }

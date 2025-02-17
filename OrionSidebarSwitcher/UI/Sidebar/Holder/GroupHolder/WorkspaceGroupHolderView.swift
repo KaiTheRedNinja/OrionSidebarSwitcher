@@ -63,6 +63,13 @@ class WorkspaceGroupHolderView: NSView {
     }
 }
 
+extension WorkspaceGroupHolderView: WorkspaceTabListInteractionDelegate {
+    func tabWasPressed(tabId: TabItem.ID, inWorkspaceId workspaceId: Workspace.ID) {
+        guard let wsGroupManager else { return }
+        wsGroupManager.select(tabWithId: tabId, inWorkspaceWithId: workspaceId)
+    }
+}
+
 /// An object that tracks the state of the workspace group holder's UI
 struct WorkspaceGroupHolderUIState: Equatable {
     /// The ID of the currently shown workspace item
