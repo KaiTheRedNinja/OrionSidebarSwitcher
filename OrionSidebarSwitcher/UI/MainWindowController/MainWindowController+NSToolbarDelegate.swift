@@ -27,7 +27,7 @@ extension MainWindowController: NSToolbarDelegate {
         guard case .sidebarToggleButton = itemIdentifier else { return nil }
 
         let item = NSToolbarItem(itemIdentifier: itemIdentifier)
-        item.image = NSImage(systemSymbolName: "sidebar.left", accessibilityDescription: "Toggle Sidebar")
+        item.image = .sidebarLeft
         item.title = "Toggle Sidebar"
         item.action = #selector(toggleSidebar)
         item.isNavigational = true

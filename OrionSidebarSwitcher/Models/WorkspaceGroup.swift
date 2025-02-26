@@ -53,7 +53,7 @@ class WorkspaceGroup: Identifiable, ObservableObject {
             workspaces: [
                 .init(
                     name: "MacBook",
-                    icon: .init(systemSymbolName: "macbook", accessibilityDescription: "Tab Icon")!,
+                    icon: .macbook,
                     pinnedTabs: [
                         .init(name: "Tim Cook", icon: TabItem.defaultIcon),
                         .init(name: "Hair Force One", icon: TabItem.defaultIcon),
@@ -69,7 +69,7 @@ class WorkspaceGroup: Identifiable, ObservableObject {
                 .blankWorkspace(),
                 .init(
                     name: "Food",
-                    icon: .init(systemSymbolName: "birthday.cake.fill", accessibilityDescription: "Tab Icon")!,
+                    icon: .cake,
                     pinnedTabs: [
                         .init(name: "Potato", icon: TabItem.defaultIcon)
                     ],

@@ -29,7 +29,8 @@ class PinnedTabView: NSView {
         // Create the icon view
         iconView = NSImageView()
         iconView.imageScaling = .scaleProportionallyUpOrDown
-        iconView.contentTintColor = .gray
+        iconView.contentTintColor = .textColor
+        iconView.alphaValue = 0.5
         iconView.translatesAutoresizingMaskIntoConstraints = false
         iconView.image = tabItem.icon
         self.addSubview(iconView)
@@ -38,8 +39,8 @@ class PinnedTabView: NSView {
         NSLayoutConstraint.activate([
             iconView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             iconView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            iconView.heightAnchor.constraint(equalToConstant: 28),
-            iconView.widthAnchor.constraint(equalToConstant: 28)
+            iconView.heightAnchor.constraint(equalToConstant: 30),
+            iconView.widthAnchor.constraint(equalToConstant: 30)
         ])
 
         // Watch its icon for changes

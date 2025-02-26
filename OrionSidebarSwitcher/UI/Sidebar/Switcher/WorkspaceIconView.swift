@@ -102,7 +102,7 @@ class WorkspaceIconView: NSView {
     override func rightMouseUp(with event: NSEvent) {
         let menu = NSMenu()
         let deleteItem = NSMenuItem()
-        deleteItem.image = NSImage(systemSymbolName: "trash", accessibilityDescription: "trash")
+        deleteItem.image = .trash
         deleteItem.title = "Delete"
         deleteItem.action = #selector(deleteWorkspace)
         deleteItem.target = self

@@ -26,7 +26,7 @@ class AddWorkspaceIconView: NSView {
         iconView.imageScaling = .scaleProportionallyUpOrDown
         iconView.contentTintColor = .labelColor
         iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.image = NSImage(systemSymbolName: "plus.circle.dashed", accessibilityDescription: "plus")
+        iconView.image = .plusCircle
         self.addSubview(iconView)
 
         // constrain the icon view's frame to be equal to this view's

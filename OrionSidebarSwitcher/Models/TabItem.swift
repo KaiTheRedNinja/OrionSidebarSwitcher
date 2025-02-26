@@ -34,5 +34,5 @@ class TabItem: Identifiable, ObservableObject {
     }
 
     /// The default icon for a tab
-    static let defaultIcon: NSImage = NSImage(systemSymbolName: "globe", accessibilityDescription: "Tab Icon")!
+    static let defaultIcon: NSImage = .globe
 }

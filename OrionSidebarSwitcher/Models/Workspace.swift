@@ -65,5 +65,5 @@ class Workspace: Identifiable, ObservableObject {
     }
 
     /// The default icon for a workspace
-    static let defaultIcon: NSImage = NSImage(systemSymbolName: "macwindow", accessibilityDescription: "Tab Icon")!
+    static let defaultIcon: NSImage = .macwindow
 }
