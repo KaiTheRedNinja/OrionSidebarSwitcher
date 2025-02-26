@@ -24,7 +24,7 @@ class WorkspaceTabListView: NSView {
     /// The view containing the pinned tabs
     var pinnedTabsView: WorkspacePinnedTabsView!
     /// The view containing the normal tabs
-    var normalTabsView: NSView!
+    var normalTabsView: WorkspaceNormalTabsView!
 
     /// How much padding the contents have between the edge of the view, and each other
     var padding: CGFloat = 6
@@ -49,9 +49,8 @@ class WorkspaceTabListView: NSView {
         pinnedTabsView.setup()
         addSubview(pinnedTabsView)
 
-        self.normalTabsView = NSView()
-        normalTabsView.wantsLayer = true
-        normalTabsView.layer?.backgroundColor = .init(red: 0, green: 0, blue: 1, alpha: 1)
+        self.normalTabsView = WorkspaceNormalTabsView()
+        normalTabsView.setup()
         addSubview(normalTabsView)
 
         watch(
