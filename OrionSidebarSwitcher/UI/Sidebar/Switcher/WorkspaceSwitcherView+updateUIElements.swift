@@ -110,6 +110,7 @@ extension WorkspaceSwitcherView {
         )
     }
 
+    /// Determines if the switcher's item should be compact
     private func shouldBeCompactGiven(
         workspaceCount: Int,
         minimumExpandedWidth: CGFloat,
@@ -121,6 +122,7 @@ extension WorkspaceSwitcherView {
         return minimumTotalWidth > availableWidth
     }
 
+    /// Determines the positions and total width of the items
     private func workspaceIconPositionsGiven(
         workspaces: [Workspace],
         minimumCompactWidth: CGFloat,
@@ -168,6 +170,7 @@ extension WorkspaceSwitcherView {
         return (workspaceIconPositions, totalWidth)
     }
 
+    /// Executes the actions and returns the associated information
     private func executeActions(
         workspaceIconPositions: [Workspace.ID: CGRect],
         hoveredWorkspaceId: Workspace.ID?,

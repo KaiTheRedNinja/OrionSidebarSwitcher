@@ -7,6 +7,7 @@
 
 import Cocoa
 
+/// A view that looks like a filled circle with the given radius
 class CircleView: NSView {
     var circleRadius: CGFloat = 5 {
         didSet { needsDisplay = true } // Redraw when updated

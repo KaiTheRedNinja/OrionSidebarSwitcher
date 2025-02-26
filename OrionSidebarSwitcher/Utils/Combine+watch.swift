@@ -8,6 +8,10 @@
 import Combine
 
 /// Watches a published attribute, by storing it in a cancellable and calling a closure during publishes
+/// - Parameters:
+///   - attribute: The publisher to watch
+///   - storage: The cancellable to store the watcher in
+///   - call: A callback, triggered whenever the storage updates
 func watch<P: Publisher>(
     attribute: P,
     storage: inout AnyCancellable?,

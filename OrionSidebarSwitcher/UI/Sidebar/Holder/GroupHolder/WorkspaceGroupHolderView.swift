@@ -65,6 +65,7 @@ class WorkspaceGroupHolderView: NSView {
 
 extension WorkspaceGroupHolderView: WorkspaceTabListInteractionDelegate {
     func tabWasPressed(tabId: TabItem.ID, inWorkspaceId workspaceId: Workspace.ID) {
+        // forward the tab selection to the manager
         guard let wsGroupManager else { return }
         wsGroupManager.select(tabWithId: tabId, inWorkspaceWithId: workspaceId)
     }

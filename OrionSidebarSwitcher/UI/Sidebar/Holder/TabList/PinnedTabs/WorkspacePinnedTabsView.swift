@@ -7,10 +7,14 @@
 
 import Cocoa
 
+/// A view that holds pinned tabs in a sidebar
 class WorkspacePinnedTabsView: NSView {
+    /// The list of pinned tabs
     var pinnedTabs: [TabItem]!
+    /// The currently selected tab. May not be within the list of pinned tabs.
     var selectedTab: TabItem.ID?
 
+    /// The views for the pinned tabs
     var pinnedTabViews: [PinnedTabView] = []
 
     /// The interaction delegate, which is forwarded interactions from the tabs
@@ -33,6 +37,7 @@ class WorkspacePinnedTabsView: NSView {
         updateUIElements()
     }
 
+    /// Calculates the ideal height of the pinned tabs section
     func idealHeight(forWidth width: CGFloat) -> CGFloat {
         // determine the number of columns
         let columns = columnCount(forWidth: width)
@@ -47,6 +52,7 @@ class WorkspacePinnedTabsView: NSView {
         updateUIElements()
     }
 
+    // tabs go from the top-down
     override var isFlipped: Bool { true }
 
     func updateUIElements() {
@@ -94,6 +100,7 @@ class WorkspacePinnedTabsView: NSView {
         }
     }
 
+    /// Determine the number of columns of pinned tabs that can fit within the given width
     private func columnCount(forWidth width: CGFloat) -> Int {
         // The number of columns is largest whole
         // number of tab items it can fit horizontally

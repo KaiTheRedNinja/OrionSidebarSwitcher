@@ -8,6 +8,7 @@
 import Cocoa
 import Combine
 
+/// A view that is responsible for indicating the current workspace, and managing switching workspaces
 class WorkspaceSwitcherView: NSView {
     /// A weak reference to the workspace group manager
     weak var wsGroupManager: WorkspaceGroupManager!

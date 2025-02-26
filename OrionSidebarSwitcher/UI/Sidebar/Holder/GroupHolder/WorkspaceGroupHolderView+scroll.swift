@@ -23,6 +23,7 @@ extension WorkspaceGroupHolderView {
 
         switch event.phase {
         case .began, .changed:
+            // add the offset
             panHorizontalOffset[default: 0] += totalDelta
 
             // if the selected workspace index is first, the pan is not allowed to be negative
@@ -72,6 +73,8 @@ extension WorkspaceGroupHolderView {
         }
     }
 
+    /// Determines if and which workspace to switch to based on the pan offset, the currently
+    /// selected workspace, and the percentage of the sidebar width the pan offset needs to be
     private func getSwitchDestinationWorkspace(selectedWorkspaceIndex: Int, threshold: CGFloat) -> TabItem.ID? {
         guard let wsGroupManager,
               let panHorizontalOffset

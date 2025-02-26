@@ -7,8 +7,11 @@
 
 import Cocoa
 
+/// A view that holds the normal (unpinned) tabs in a sidebar
 class WorkspaceNormalTabsView: NSScrollView {
+    /// The list of normal tabs
     var normalTabs: [TabItem]!
+    /// The currently selected tab. May not be within the list of normal tabs.
     var selectedTab: TabItem.ID?
 
     /// The interaction delegate, which is forwarded interactions from the tabs
@@ -53,6 +56,7 @@ class WorkspaceNormalTabsView: NSScrollView {
         outlineView.expandItem(outlineView.item(atRow: 0))
     }
 
+    /// Updates the outline view to be up to date with the tab list and selected item
     func updateUIElements() {
         // get the selected row, and if its different from the current one, change it
         let targetRowIndex = outlineView.row(forItem: selectedTab)
@@ -61,7 +65,7 @@ class WorkspaceNormalTabsView: NSScrollView {
         outlineView.selectRowIndexes(.init(integer: targetRowIndex), byExtendingSelection: true)
     }
 
-    /// We forward scroll events to the parent so that it can process workspace panning
+    /// Forward scroll events to the parent so that it can process workspace panning
     /// events, but only when horizontal panning > vertical panning so that the outline view
     /// can still operate normally
     override func scrollWheel(with event: NSEvent) {
@@ -74,7 +78,7 @@ class WorkspaceNormalTabsView: NSScrollView {
 }
 
 extension WorkspaceNormalTabsView: NSOutlineViewDataSource, NSOutlineViewDelegate {
-    // Providing a view for a given item in a column
+    /// Providing a view for a given item in a column
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         guard let tabId = item as? TabItem.ID, let tab = normalTabs.first(where: { $0.id == tabId }) else { return nil }
 
@@ -84,13 +88,13 @@ extension WorkspaceNormalTabsView: NSOutlineViewDataSource, NSOutlineViewDelegat
         return cell
     }
 
-    // The number of children an item has
+    /// The number of children an item has, equal to the number of tabs
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         guard item == nil else { return 0 }
         return normalTabs.count
     }
 
-    // The child at an index of an item
+    /// The child at an index of an item
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         assert(item == nil, "Items do not have children")
         assert(index >= 0 && index < normalTabs.count, "Requested index must exist")
@@ -100,6 +104,7 @@ extension WorkspaceNormalTabsView: NSOutlineViewDataSource, NSOutlineViewDelegat
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool { false }
     func outlineView(_ outlineView: NSOutlineView, heightOfRowByItem item: Any) -> CGFloat { rowHeight }
 
+    /// Forward selection changes via the interaction delegate
     func outlineViewSelectionDidChange(_ notification: Notification) {
         let selectedRow = outlineView.selectedRow
 
@@ -111,7 +116,7 @@ extension WorkspaceNormalTabsView: NSOutlineViewDataSource, NSOutlineViewDelegat
     }
 }
 
-/// Makes the selection gray
+/// An `NSOutlineView` which cannot be first responder, which makes the selection gray
 class UnfocusableOutlineView: NSOutlineView {
     override var acceptsFirstResponder: Bool { false }
 }

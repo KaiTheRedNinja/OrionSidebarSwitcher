@@ -102,22 +102,26 @@ class PageViewController: NSViewController {
 
     /// Sets up the page view controller's listeners
     func setup() {
+        // watch the focused workspace id
         watch(
             attribute: wsGroupManager.workspaceGroup.$focusedWorkspaceID,
             storage: &focusedWorkspaceChangeWatcher
         ) { [weak self] focusedWorkspaceId in
             guard let self else { return }
 
+            // get the focused workspace
             guard let focusedWorkspace = wsGroupManager.workspaceGroup.workspaces
                 .first(where: { $0.id == focusedWorkspaceId })
             else { return }
 
+            // watch the focused workspace's selected tab id
             watch(
                 attribute: focusedWorkspace.$selectedTabId,
                 storage: &focusedTabChangeWatcher
             ) { [weak self] selectedTabId in
                 guard let self else { return }
 
+                // get the selected tab
                 guard let selectedTab = focusedWorkspace.allTabs
                     .first(where: { $0.id == selectedTabId })
                 else { return }
@@ -136,9 +140,8 @@ class PageViewController: NSViewController {
 
 extension PageViewController: NSTextDelegate {
     func textDidChange(_ notification: Notification) {
-        if textView.string.contains("\n") {
-            view.window?.makeFirstResponder(nil)
-        }
+        // if the text view contains a newline, finish editing
+        if textView.string.contains("\n") { view.window?.makeFirstResponder(nil) }
         wsGroupManager.currentWorkspaceTab().name = textView.string.replacingOccurrences(of: "\n", with: "")
     }
 }

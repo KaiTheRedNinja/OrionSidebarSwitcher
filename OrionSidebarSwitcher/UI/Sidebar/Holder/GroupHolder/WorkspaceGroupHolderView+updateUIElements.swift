@@ -143,6 +143,7 @@ extension WorkspaceGroupHolderView {
         )
     }
 
+    /// Executes the actions and returns associated data
     private func executeActions(
         currentWorkspaceId: Workspace.ID?,
         actions: [WorkspaceGroupHolderAction],
@@ -166,13 +167,13 @@ extension WorkspaceGroupHolderView {
             case let .workspaceRemoved(workspaceId):
                 workspacesToRemove.insert(workspaceId)
             case let .workspaceAdded(workspace, _):
+                // create the item for it
                 let tabListView = WorkspaceTabListView()
                 tabListView.workspace = workspace
                 tabListView.interactionDelegate = self
                 tabListView.setup()
                 tabListViews.append(tabListView)
             case .panning:
-
                 // add the views for the workspaces to the left/right of the current workspace
                 guard let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == currentWorkspaceId }),
                       let panHorizontalOffset
@@ -193,6 +194,7 @@ extension WorkspaceGroupHolderView {
         return (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan)
     }
 
+    /// Set the frames according to pan data
     private func processPan(
         isResettingFromPan: Bool,
         panHorizontalOffset: CGFloat?,
@@ -262,6 +264,7 @@ extension WorkspaceGroupHolderView {
         workspaceToShowView.frame = targetFrame
     }
 
+    /// Set the workspace frames
     private func workspaceFrames(
         currentWorkspaceIndex: Int?,
         workspaceToShowIndex: Int,
@@ -304,6 +307,7 @@ extension WorkspaceGroupHolderView {
         return (newWorkspaceFrame, oldWorkspaceFrame)
     }
 
+    /// Remove an old workspace's view, optionally with an animation
     private func animateOutOldView(
         currentWorkspaceView: WorkspaceTabListView?,
         oldWorkspaceFrame: CGRect,
@@ -338,6 +342,7 @@ extension WorkspaceGroupHolderView {
         }
     }
 
+    /// Introduce a new workspace's view, optionally with an animation
     private func animateInNewView(
         workspaceToShowView: WorkspaceTabListView,
         newWorkspaceFrame: CGRect,
@@ -370,6 +375,7 @@ extension WorkspaceGroupHolderView {
         }
     }
 
+    /// Remove views that are to be removed and not the current view
     private func deleteRemovedHiddenViews(
         workspacesToRemove: Set<Workspace.ID>,
         currentWorkspaceId: Workspace.ID?

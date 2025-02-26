@@ -33,6 +33,7 @@ class WorkspaceTabListView: NSView {
 
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
+        // create the title view
         self.titleView = NSText()
         titleView.string = workspace.name
         titleView.textColor = .gray
@@ -40,21 +41,23 @@ class WorkspaceTabListView: NSView {
         titleView.isEditable = false
         titleView.font = .boldSystemFont(ofSize: 12)
         titleView.isSelectable = false
-        titleView.delegate = self
         addSubview(titleView)
 
+        // create the pinned tabs view
         self.pinnedTabsView = WorkspacePinnedTabsView()
         pinnedTabsView.pinnedTabs = workspace.pinnedTabs
         pinnedTabsView.interactionDelegate = self
         pinnedTabsView.setup()
         addSubview(pinnedTabsView)
 
+        // create the normal tabs view
         self.normalTabsView = WorkspaceNormalTabsView()
         normalTabsView.normalTabs = workspace.regularTabs
         normalTabsView.interactionDelegate = self
         normalTabsView.setup()
         addSubview(normalTabsView)
 
+        // watch the selected tab and update the tab views as needed
         watch(
             attribute: workspace.$selectedTabId,
             storage: &selectedTabWatcher
@@ -70,6 +73,7 @@ class WorkspaceTabListView: NSView {
         window?.makeFirstResponder(nil)
     }
 
+    // tabs go from top to bottom
     override var isFlipped: Bool { true }
 
     override func layout() {
@@ -95,12 +99,13 @@ class WorkspaceTabListView: NSView {
             width: contentWidth,
             height: pinnedTabsViewHeight
         )
-        // if the height changed, thats likely because the number of rows changed. Therefore, we animate.
+        // update the width
+        pinnedTabsView.frame.size.width = pinnedTabsTargetFrame.width
+        // if the height changed, thats likely because the number of rows changed. Therefore, we animate height
         let animateFrameChange = (
             pinnedTabsView.frame.height != pinnedTabsTargetFrame.height &&  // height changed
             pinnedTabsView.frame.height != 0                                // height wasn't 0
         )
-        pinnedTabsView.frame.size.width = pinnedTabsTargetFrame.width
         if animateFrameChange {
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = 0.3
@@ -135,17 +140,6 @@ class WorkspaceTabListView: NSView {
 extension WorkspaceTabListView: TabInteractionDelegate {
     func tabWasPressed(tabId: TabItem.ID) {
         interactionDelegate?.tabWasPressed(tabId: tabId, inWorkspaceId: workspace.id)
-    }
-}
-
-extension WorkspaceTabListView: NSTextDelegate {
-    func textDidChange(_ notification: Notification) {
-        if titleView.string.contains("\n") {
-            window?.makeFirstResponder(nil)
-            titleView.isEditable = false
-            titleView.isSelectable = false
-        }
-        workspace.name = titleView.string.replacingOccurrences(of: "\n", with: "")
     }
 }
 

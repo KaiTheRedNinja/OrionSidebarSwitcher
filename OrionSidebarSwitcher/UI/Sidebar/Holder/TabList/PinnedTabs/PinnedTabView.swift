@@ -8,10 +8,14 @@
 import Cocoa
 import Combine
 
+/// A view that represents a single pinned tab in a sidebar
 class PinnedTabView: NSView {
+    /// The tab that this view represents
     var tabItem: TabItem!
+    /// If the tab is the selected tab or not
     var isSelected: Bool!
 
+    /// The interaction delegate, informed of tab selection interactions
     var interactionDelegate: TabInteractionDelegate?
 
     /// The watcher for when the tab's icon changes

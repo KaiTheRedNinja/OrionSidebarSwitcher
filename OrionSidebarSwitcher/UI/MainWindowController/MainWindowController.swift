@@ -7,6 +7,7 @@
 
 import Cocoa
 
+/// The controller for the primary window
 class MainWindowController: NSWindowController {
     /// The `NSSplitView`'s controller, at the root of this window
     var splitViewController: NSSplitViewController!

@@ -9,7 +9,7 @@ import Foundation
 import Cocoa
 import Combine
 
-/// A reusable Table View Cell with a label, secondary label, and icon
+/// A table view cell that represents a single normal (unpinned) tab
 open class NormalTabTableViewCell: NSTableCellView {
     /// The tab item that this view cell corresponds with
     var tabItem: TabItem!

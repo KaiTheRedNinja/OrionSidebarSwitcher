@@ -7,6 +7,7 @@
 
 import Cocoa
 
+/// A view controller that manages the views of the sidebar
 class SidebarViewController: NSViewController {
     /// A weak reference to the workspace group manager
     weak var wsGroupManager: WorkspaceGroupManager!
