@@ -60,6 +60,17 @@ class WorkspaceNormalTabsView: NSScrollView {
         outlineView.reloadData()
         outlineView.selectRowIndexes(.init(integer: targetRowIndex), byExtendingSelection: true)
     }
+
+    /// We forward scroll events to the parent so that it can process workspace panning
+    /// events, but only when horizontal panning > vertical panning so that the outline view
+    /// can still operate normally
+    override func scrollWheel(with event: NSEvent) {
+        if abs(event.scrollingDeltaX) > abs(event.scrollingDeltaY) ||  // is a horizontal scroll
+           [NSEvent.Phase.ended, .cancelled].contains(event.phase) {   // or is an ending event
+            self.superview?.scrollWheel(with: event)
+        }
+        super.scrollWheel(with: event)
+    }
 }
 
 extension WorkspaceNormalTabsView: NSOutlineViewDataSource, NSOutlineViewDelegate {
