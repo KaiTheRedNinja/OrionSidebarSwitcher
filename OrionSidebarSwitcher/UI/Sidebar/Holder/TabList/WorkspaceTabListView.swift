@@ -26,8 +26,10 @@ class WorkspaceTabListView: NSView {
     /// The view containing the normal tabs
     var normalTabsView: WorkspaceNormalTabsView!
 
-    /// How much padding the contents have between the edge of the view, and each other
-    var padding: CGFloat = 6
+    /// How much horizontal padding the contents have between the edge of the view
+    var horizontalPadding: CGFloat = 12
+    /// How much vertical spacing the contents have between each other
+    var verticalSpacing: CGFloat = 8
 
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
@@ -67,15 +69,15 @@ class WorkspaceTabListView: NSView {
 
     override func layout() {
         // How wide the content is, accounting for padding
-        let contentWidth = self.bounds.width - padding*2
+        let contentWidth = self.bounds.width - horizontalPadding*2
 
         // title view at the top. We do manual adjustment so that
         // the view appears vertically centered
         let titleViewTextHeight: CGFloat = 15
         let titleViewHeight: CGFloat = 18
         titleView.frame = .init(
-            x: padding,
-            y: (titleViewHeight-titleViewTextHeight)/2 + padding,
+            x: horizontalPadding,
+            y: (titleViewHeight-titleViewTextHeight)/2 + verticalSpacing,
             width: contentWidth,
             height: titleViewTextHeight
         )
@@ -83,8 +85,8 @@ class WorkspaceTabListView: NSView {
         // pinned tabs view right below
         let pinnedTabsViewHeight = pinnedTabsView.idealHeight(forWidth: contentWidth)
         let pinnedTabsTargetFrame = CGRect(
-            x: padding,
-            y: titleView.frame.maxY + padding,
+            x: horizontalPadding,
+            y: titleView.frame.maxY + verticalSpacing,
             width: contentWidth,
             height: pinnedTabsViewHeight
         )
@@ -107,10 +109,10 @@ class WorkspaceTabListView: NSView {
 
         // normal tabs view all the way down
         let normalTabsTargetFrame = CGRect(
-            x: padding,
-            y: pinnedTabsView.frame.maxY + padding,
-            width: contentWidth,
-            height: self.bounds.height - pinnedTabsView.frame.maxY - padding
+            x: 0,
+            y: pinnedTabsView.frame.maxY + verticalSpacing,
+            width: self.bounds.width,
+            height: self.bounds.height - pinnedTabsView.frame.maxY - verticalSpacing
         )
         normalTabsView.frame.size.width = normalTabsTargetFrame.width
         if animateFrameChange {

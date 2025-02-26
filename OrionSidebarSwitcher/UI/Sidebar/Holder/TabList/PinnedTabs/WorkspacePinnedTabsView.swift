@@ -95,6 +95,7 @@ class WorkspacePinnedTabsView: NSView {
     private func columnCount(forWidth width: CGFloat) -> Int {
         // The number of columns is largest whole
         // number of tab items it can fit horizontally
-        Int(width/(PinnedTabView.tabItemHeight+padding))
+        // we add the padding to the width to account for the last tab's trailing padding
+        Int((width+padding)/(PinnedTabView.tabItemHeight+padding))
     }
 }
