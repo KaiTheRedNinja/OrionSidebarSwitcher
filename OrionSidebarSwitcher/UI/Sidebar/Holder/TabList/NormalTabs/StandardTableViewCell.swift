@@ -46,9 +46,9 @@ open class StandardTableViewCell: NSTableCellView {
         imageView = icon
 
         // add constraints
-        createConstraints(frame: frameRect)
         addSubview(label)
         addSubview(icon)
+        setupConstraints()
     }
 
     // MARK: Create and config stuff
@@ -65,7 +65,7 @@ open class StandardTableViewCell: NSTableCellView {
         label.isEditable = isEditable
         label.isSelectable = isEditable
         label.layer?.cornerRadius = 10.0
-        label.font = .labelFont(ofSize: fontSize)
+        label.font = .labelFont(ofSize: 13)
         label.lineBreakMode = .byTruncatingMiddle
     }
 
@@ -77,31 +77,21 @@ open class StandardTableViewCell: NSTableCellView {
     /// Sets up a given image view
     open func configIcon(icon: NSImageView) {
         icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.symbolConfiguration = .init(pointSize: fontSize, weight: .regular, scale: .medium)
+        icon.symbolConfiguration = .init(pointSize: 13, weight: .regular, scale: .medium)
     }
 
-    /// Contrains the views. Currently only redirects to ``resizeSubviews(withOldSize:)``
-    open func createConstraints(frame frameRect: NSRect) {
-        resizeSubviews(withOldSize: .zero)
-    }
+    func setupConstraints() {
+        NSLayoutConstraint.activate([
+            icon.widthAnchor.constraint(equalToConstant: 15),
+            icon.heightAnchor.constraint(equalToConstant: 15),
+            icon.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            icon.centerYAnchor.constraint(equalTo: self.centerYAnchor),
 
-    let iconWidth: CGFloat = 22
-
-    /// Positions all the views
-    override public func resizeSubviews(withOldSize oldSize: NSSize) {
-        super.resizeSubviews(withOldSize: oldSize)
-
-        icon.frame = NSRect(
-            x: 2, y: 4,
-            width: iconWidth, height: frame.height
-        )
-
-        label.frame = NSRect(
-            x: 2+iconWidth,
-            y: 2.8,
-            width: frame.width - iconWidth - 2,
-            height: 22
-        )
+            label.heightAnchor.constraint(equalToConstant: 15),
+            label.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 3),
+            label.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            label.centerYAnchor.constraint(equalTo: self.centerYAnchor)
+        ])
     }
 
     /// *Not Implemented*
@@ -110,15 +100,5 @@ open class StandardTableViewCell: NSTableCellView {
             init?(coder: NSCoder) isn't implemented on `StandardTableViewCell`.
             Please use `.init(frame: NSRect, isEditable: Bool)
             """)
-    }
-
-    /// Returns the font size for the current row height. Defaults to `13.0`
-    private var fontSize: Double {
-        switch self.frame.height {
-        case 20: return 11
-        case 22: return 13
-        case 24: return 14
-        default: return 13
-        }
     }
 }
