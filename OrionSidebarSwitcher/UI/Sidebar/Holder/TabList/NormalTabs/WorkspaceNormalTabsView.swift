@@ -7,11 +7,10 @@
 
 import Cocoa
 
-/// The default height of a row
-public let defaultRowHeight: Double = 22
-
 class WorkspaceNormalTabsView: NSScrollView, NSOutlineViewDataSource, NSOutlineViewDelegate {
     public var outlineView: NSOutlineView!
+
+    let rowHeight: Double = 26
 
     /// Setup the ``scrollView`` and ``outlineView``
     func setup() {
@@ -31,7 +30,7 @@ class WorkspaceNormalTabsView: NSScrollView, NSOutlineViewDataSource, NSOutlineV
         // outlineView stays clipped within the scrollView
         self.documentView = outlineView
         self.contentView.automaticallyAdjustsContentInsets = false
-        self.contentView.contentInsets = .init(top: 10, left: 0, bottom: 0, right: 0)
+        self.contentView.contentInsets = .init(top: 0, left: 0, bottom: 0, right: 0)
 
         // set the scrollView to only scroll vertically and to hide the scrollers automatically
         self.scrollerStyle = .overlay
@@ -39,7 +38,7 @@ class WorkspaceNormalTabsView: NSScrollView, NSOutlineViewDataSource, NSOutlineV
         self.hasHorizontalScroller = false
         self.autohidesScrollers = true
         self.drawsBackground = false
-        outlineView.rowHeight = defaultRowHeight
+        outlineView.rowHeight = rowHeight
 
         // load the data and expand the first item
         outlineView.reloadData()
@@ -76,7 +75,7 @@ class WorkspaceNormalTabsView: NSScrollView, NSOutlineViewDataSource, NSOutlineV
     }
 
     func outlineView(_ outlineView: NSOutlineView, heightOfRowByItem item: Any) -> CGFloat {
-        defaultRowHeight
+        rowHeight
     }
 
     func outlineViewSelectionDidChange(_ notification: Notification) {

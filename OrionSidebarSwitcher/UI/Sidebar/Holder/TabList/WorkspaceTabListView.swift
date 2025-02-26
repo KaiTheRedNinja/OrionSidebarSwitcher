@@ -27,7 +27,7 @@ class WorkspaceTabListView: NSView {
     var normalTabsView: WorkspaceNormalTabsView!
 
     /// How much horizontal padding the contents have between the edge of the view
-    var horizontalPadding: CGFloat = 12
+    var horizontalPadding: CGFloat = 10
     /// How much vertical spacing the contents have between each other
     var verticalSpacing: CGFloat = 8
 

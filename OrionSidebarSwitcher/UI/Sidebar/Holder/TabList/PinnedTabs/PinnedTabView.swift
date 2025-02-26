@@ -20,7 +20,7 @@ class PinnedTabView: NSView {
     private var iconView: NSImageView!
 
     /// How tall each tab item is
-    static let tabItemHeight: CGFloat = 40
+    static let tabItemHeight: CGFloat = 36
 
     func setup() {
         wantsLayer = true
