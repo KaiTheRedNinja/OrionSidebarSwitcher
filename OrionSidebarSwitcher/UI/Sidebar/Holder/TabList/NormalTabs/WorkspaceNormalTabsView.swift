@@ -7,9 +7,17 @@
 
 import Cocoa
 
-class WorkspaceNormalTabsView: NSScrollView, NSOutlineViewDataSource, NSOutlineViewDelegate {
-    public var outlineView: NSOutlineView!
+class WorkspaceNormalTabsView: NSScrollView {
+    var normalTabs: [TabItem]!
+    var selectedTab: TabItem.ID?
 
+    /// The interaction delegate, which is forwarded interactions from the tabs
+    var interactionDelegate: TabInteractionDelegate?
+
+    /// The outline view holding the tabs
+    private var outlineView: NSOutlineView!
+
+    /// The height of each row
     let rowHeight: Double = 26
 
     /// Setup the ``scrollView`` and ``outlineView``
@@ -45,41 +53,48 @@ class WorkspaceNormalTabsView: NSScrollView, NSOutlineViewDataSource, NSOutlineV
         outlineView.expandItem(outlineView.item(atRow: 0))
     }
 
+    func updateUIElements() {
+        let targetRowIndex = outlineView.row(forItem: selectedTab)
+        outlineView.selectRowIndexes(.init(integer: targetRowIndex), byExtendingSelection: false)
+        outlineView.reloadData()
+    }
+}
+
+extension WorkspaceNormalTabsView: NSOutlineViewDataSource, NSOutlineViewDelegate {
     // Providing a view for a given item in a column
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        guard let tabId = item as? TabItem.ID, let tab = normalTabs.first(where: { $0.id == tabId }) else { return nil }
+
         let cell = StandardTableViewCell(frame: .zero)
-        cell.icon.image = NSImage(systemSymbolName: "globe", accessibilityDescription: "globe")
-        cell.label.stringValue = "\(item)"
+        cell.icon.image = tab.icon
+        cell.label.stringValue = tab.name
         return cell
     }
 
     // The number of children an item has
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        if item != nil {
-            0
-        } else {
-            // TODO: number of tabs
-            10
-        }
+        guard item == nil else { return 0 }
+        return normalTabs.count
     }
 
     // The child at an index of an item
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         assert(item == nil, "Items do not have children")
-        // TODO: actual tab reference
-        return index
+        assert(index >= 0 && index < normalTabs.count, "Requested index must exist")
+        return normalTabs[index].id
     }
 
-    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        false
-    }
-
-    func outlineView(_ outlineView: NSOutlineView, heightOfRowByItem item: Any) -> CGFloat {
-        rowHeight
-    }
+    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool { false }
+    func outlineView(_ outlineView: NSOutlineView, heightOfRowByItem item: Any) -> CGFloat { rowHeight }
 
     func outlineViewSelectionDidChange(_ notification: Notification) {
-        print("Selection changed!")
+        let selectedRow = outlineView.selectedRow
+
+        guard selectedRow >= 0 && selectedRow < normalTabs.count,
+              let selectedItem = outlineView.item(atRow: selectedRow) as? TabItem
+        else { return }
+
+        interactionDelegate?.tabWasPressed(tabId: selectedItem.id)
     }
 }
 

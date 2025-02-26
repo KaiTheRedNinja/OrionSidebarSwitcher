@@ -52,6 +52,8 @@ class WorkspaceTabListView: NSView {
         addSubview(pinnedTabsView)
 
         self.normalTabsView = WorkspaceNormalTabsView()
+        normalTabsView.normalTabs = workspace.regularTabs
+        normalTabsView.interactionDelegate = self
         normalTabsView.setup()
         addSubview(normalTabsView)
 
@@ -61,7 +63,9 @@ class WorkspaceTabListView: NSView {
         ) { [weak self] selectedTab in
             guard let self else { return }
             pinnedTabsView.selectedTab = selectedTab
+            normalTabsView.selectedTab = selectedTab
             pinnedTabsView.updateUIElements()
+            normalTabsView.updateUIElements()
         }
     }
 
