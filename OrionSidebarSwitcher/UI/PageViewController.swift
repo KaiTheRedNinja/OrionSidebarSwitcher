@@ -26,6 +26,9 @@ class PageViewController: NSViewController {
     /// The view responsible for showing the primary text
     private var textView: NSText!
 
+    /// The KVO object for the text view
+    private var textViewKVO: NSKeyValueObservation?
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -42,7 +45,8 @@ class PageViewController: NSViewController {
         label.alignment = .center
         label.backgroundColor = .clear
         label.font = .systemFont(ofSize: 20, weight: .bold)
-        label.isEditable = false
+        label.isEditable = true
+        label.delegate = self
         self.textView = label
         view.addSubview(label)
 
@@ -86,16 +90,7 @@ class PageViewController: NSViewController {
         guard let sender = sender as? NSMenuItem, let image = sender.image else { return }
 
         // set the icon
-        let workspaceGroup = wsGroupManager.workspaceGroup
-        guard let focusedWorkspace = workspaceGroup.workspaces.first(where: {
-                  $0.id == workspaceGroup.focusedWorkspaceID
-              }),
-              let selectedTab = focusedWorkspace.allTabs.first(where: {
-                  $0.id == focusedWorkspace.selectedTabId
-              })
-        else { return }
-
-        selectedTab.icon = image
+        wsGroupManager.currentWorkspaceTab().icon = image
     }
 
     deinit {
@@ -136,5 +131,11 @@ class PageViewController: NSViewController {
                 }
             }
         }
+    }
+}
+
+extension PageViewController: NSTextDelegate {
+    func textDidChange(_ notification: Notification) {
+        wsGroupManager.currentWorkspaceTab().name = textView.string
     }
 }
