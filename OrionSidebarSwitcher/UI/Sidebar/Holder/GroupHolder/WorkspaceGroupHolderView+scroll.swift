@@ -33,14 +33,33 @@ extension WorkspaceGroupHolderView {
                 panHorizontalOffset = min(0, panHorizontalOffset ?? 0)
             }
 
-            updateUIElements(actions: [.panning], workspaces: workspaces)
+            // if the pan horizontal offset is larger than the width, a full switch has occured
+            // switch to the workspace if needed
+            let switchAction: [WorkspaceGroupHolderAction]
+            if let targetItem = getSwitchDestinationWorkspace(
+                selectedWorkspaceIndex: selectedWorkspaceIndex,
+                threshold: 1
+            ) {
+                // reset the pan, and refocus
+                panHorizontalOffset = 0
+                wsGroupManager.focus(workspaceWithId: targetItem)
+                switchAction = [.workspaceSelected(targetItem)]
+            } else {
+                switchAction = []
+            }
+
+            updateUIElements(actions: [.panning] + switchAction, workspaces: workspaces)
         case .ended:
             // if the panning offset is larger than half the width, we switch to the next view
-            let didSwitch = switchIfScrolledEnough(selectedWorkspaceIndex: selectedWorkspaceIndex)
-
-            // reset the pan and update the UI
-            panHorizontalOffset = nil
-            if !didSwitch {
+            if let targetItem = getSwitchDestinationWorkspace(
+                selectedWorkspaceIndex: selectedWorkspaceIndex,
+                threshold: 0.5
+            ) {
+                panHorizontalOffset = nil
+                wsGroupManager.focus(workspaceWithId: targetItem)
+            } else {
+                // reset the pan and update the UI if no switch occured
+                panHorizontalOffset = nil
                 updateUIElements(actions: [.panningCancelled], workspaces: workspaces)
             }
         case .cancelled:
@@ -53,27 +72,25 @@ extension WorkspaceGroupHolderView {
         }
     }
 
-    private func switchIfScrolledEnough(selectedWorkspaceIndex: Int) -> Bool {
+    private func getSwitchDestinationWorkspace(selectedWorkspaceIndex: Int, threshold: CGFloat) -> TabItem.ID? {
         guard let wsGroupManager,
               let panHorizontalOffset
-        else { return false }
+        else { return nil }
 
         let workspaces = wsGroupManager.workspaceGroup.workspaces
 
-        if panHorizontalOffset > bounds.width / 2 {
+        if panHorizontalOffset > bounds.width * threshold {
             // switch to the workspace after
             if selectedWorkspaceIndex < workspaces.count - 1 {
-                wsGroupManager.focus(workspaceWithId: workspaces[selectedWorkspaceIndex + 1].id)
-                return true
+                return workspaces[selectedWorkspaceIndex + 1].id
             }
-        } else if panHorizontalOffset < -bounds.width / 2 {
+        } else if panHorizontalOffset < -bounds.width * threshold {
             // switch to the workspace before
             if selectedWorkspaceIndex > 0 {
-                wsGroupManager.focus(workspaceWithId: workspaces[selectedWorkspaceIndex - 1].id)
-                return true
+                return workspaces[selectedWorkspaceIndex - 1].id
             }
         }
 
-        return false
+        return nil
     }
 }

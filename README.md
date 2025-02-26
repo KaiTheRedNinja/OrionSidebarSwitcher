@@ -14,6 +14,7 @@ Roughly based on the specifications at https://hackmd.io/@kagi/S1hXCgYFkg
 - [x] Workspace content holder
     - [x] Smooth animation while switching to different workspace.
     - [x] Pan gesture to swipe between workspaces.
+        - [x] Use pan gesture to swipe between multiple workspaces
     - [x] Pinned tabs
     - [x] Normal tabs
     - [x] Indicator for current tab
