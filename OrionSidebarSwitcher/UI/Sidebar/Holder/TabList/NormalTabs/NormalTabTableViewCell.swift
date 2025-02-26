@@ -1,15 +1,24 @@
 //
-//  StandardTableViewCell.swift
+//  NormalTabTableViewCell.swift
 //  OrionSidebarSwitcher
 //
 //  Created by Kai Quan Tay on 26/2/25.
 //
 
 import Foundation
-import SwiftUI
+import Cocoa
+import Combine
 
 /// A reusable Table View Cell with a label, secondary label, and icon
-open class StandardTableViewCell: NSTableCellView {
+open class NormalTabTableViewCell: NSTableCellView {
+    /// The tab item that this view cell corresponds with
+    var tabItem: TabItem!
+
+    /// The watcher that detects when the tab's icon changes
+    private var tabIconWatcher: AnyCancellable?
+    /// The watcher that detects when the tab's title changes
+    private var tabTitleWatcher: AnyCancellable?
+
     /// The main text to display
     public weak var label: NSTextField!
     /// The icon, at the leading edge of the cell
@@ -30,6 +39,16 @@ open class StandardTableViewCell: NSTableCellView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupViews(frame: frameRect, isEditable: false)
+    }
+
+    /// Sets up the watchers
+    func setup() {
+        watch(attribute: tabItem.$icon, storage: &tabIconWatcher) { [weak self] image in
+            self?.icon.image = image
+        }
+        watch(attribute: tabItem.$name, storage: &tabTitleWatcher) { [weak self] title in
+            self?.label.stringValue = title
+        }
     }
 
     private func setupViews(frame frameRect: NSRect, isEditable: Bool) {

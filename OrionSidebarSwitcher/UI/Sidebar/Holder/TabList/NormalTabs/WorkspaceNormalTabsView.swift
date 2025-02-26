@@ -78,9 +78,9 @@ extension WorkspaceNormalTabsView: NSOutlineViewDataSource, NSOutlineViewDelegat
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         guard let tabId = item as? TabItem.ID, let tab = normalTabs.first(where: { $0.id == tabId }) else { return nil }
 
-        let cell = StandardTableViewCell(frame: .zero)
-        cell.icon.image = tab.icon
-        cell.label.stringValue = tab.name
+        let cell = NormalTabTableViewCell(frame: .zero)
+        cell.tabItem = tab
+        cell.setup()
         return cell
     }
 
