@@ -1,6 +1,8 @@
 # OrionSidebarSwitcher
 Orion Sidebar Switcher Technical Challenge
 
+Demo available at `demo.mov`, app binary available at `OrionSidebarSwitcher.zip`
+
 ## Todo List
 
 Roughly based on the specifications at https://hackmd.io/@kagi/S1hXCgYFkg
@@ -51,3 +53,11 @@ their `WorkspaceIconInteractionDelegate`s. When the user clicks on an item, this
 
 This allows interaction, UI, and state to be kept separate and modular, since they only interact through protocols
 and publishers.
+
+### UX Improvements
+
+The brief requested a "pan gesture to swipe between workspaces". My implementation allows for continuous swiping,
+so you could go from the first to the last workspace just by swiping continuously.
+
+You can also pan horizontally by scrolling vertically (eg. with a mouse wheel) on the pinned tabs or workspace title,
+which allows those without a trackpad to easily scroll.
