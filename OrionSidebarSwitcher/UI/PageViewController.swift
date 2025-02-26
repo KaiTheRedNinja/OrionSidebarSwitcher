@@ -66,6 +66,38 @@ class PageViewController: NSViewController {
         ])
     }
 
+    override func rightMouseUp(with event: NSEvent) {
+        let menu = NSMenu()
+
+        for image in NSImage.tabIconOptions {
+            let imageItem = NSMenuItem()
+            imageItem.image = image
+            imageItem.title = "Switch Icon"
+            imageItem.action = #selector(switchIcon(_:))
+            imageItem.target = self
+            menu.items.append(imageItem)
+        }
+
+        menu.popUp(positioning: nil, at: .zero, in: self.imageView)
+    }
+
+    @objc
+    func switchIcon(_ sender: Any?) {
+        guard let sender = sender as? NSMenuItem, let image = sender.image else { return }
+
+        // set the icon
+        let workspaceGroup = wsGroupManager.workspaceGroup
+        guard let focusedWorkspace = workspaceGroup.workspaces.first(where: {
+                  $0.id == workspaceGroup.focusedWorkspaceID
+              }),
+              let selectedTab = focusedWorkspace.allTabs.first(where: {
+                  $0.id == focusedWorkspace.selectedTabId
+              })
+        else { return }
+
+        selectedTab.icon = image
+    }
+
     deinit {
         focusedWorkspaceChangeWatcher?.cancel()
         focusedTabChangeWatcher?.cancel()
