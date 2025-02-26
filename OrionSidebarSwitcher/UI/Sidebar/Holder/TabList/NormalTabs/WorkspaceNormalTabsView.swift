@@ -54,9 +54,11 @@ class WorkspaceNormalTabsView: NSScrollView {
     }
 
     func updateUIElements() {
+        // get the selected row, and if its different from the current one, change it
         let targetRowIndex = outlineView.row(forItem: selectedTab)
-        outlineView.selectRowIndexes(.init(integer: targetRowIndex), byExtendingSelection: false)
+        guard outlineView.selectedRow != targetRowIndex else { return }
         outlineView.reloadData()
+        outlineView.selectRowIndexes(.init(integer: targetRowIndex), byExtendingSelection: true)
     }
 }
 
@@ -91,10 +93,10 @@ extension WorkspaceNormalTabsView: NSOutlineViewDataSource, NSOutlineViewDelegat
         let selectedRow = outlineView.selectedRow
 
         guard selectedRow >= 0 && selectedRow < normalTabs.count,
-              let selectedItem = outlineView.item(atRow: selectedRow) as? TabItem
+              let selectedItem = outlineView.item(atRow: selectedRow) as? TabItem.ID
         else { return }
 
-        interactionDelegate?.tabWasPressed(tabId: selectedItem.id)
+        interactionDelegate?.tabWasPressed(tabId: selectedItem)
     }
 }
 

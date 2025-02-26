@@ -20,7 +20,6 @@ class MainWindowController: NSWindowController {
 
     override func windowDidLoad() {
         super.windowDidLoad()
-        print("Window loaded!")
 
         // Set itself as the window's toolbar delegate, and set up the toolbar
         let toolbar = NSToolbar()
