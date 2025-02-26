@@ -15,6 +15,7 @@ extension NSImage {
     static let plusCircle = NSImage(systemSymbolName: "plus.circle.dashed", accessibilityDescription: "plus")
     static let trash = NSImage(systemSymbolName: "trash", accessibilityDescription: "trash")
     static let sidebarLeft = NSImage(systemSymbolName: "sidebar.left", accessibilityDescription: "Toggle Sidebar")
+    static let edit = NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: "Edit")!
 
     // Tab/workspace icons
     static let globe = NSImage(systemSymbolName: "globe", accessibilityDescription: "Tab Icon")!

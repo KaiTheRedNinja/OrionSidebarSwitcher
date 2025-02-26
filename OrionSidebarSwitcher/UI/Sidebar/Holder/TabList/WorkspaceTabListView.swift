@@ -37,9 +37,9 @@ class WorkspaceTabListView: NSView {
         titleView.string = workspace.name
         titleView.textColor = .gray
         titleView.backgroundColor = .clear
-        titleView.isEditable = true
+        titleView.isEditable = false
         titleView.font = .boldSystemFont(ofSize: 12)
-        titleView.isSelectable = true
+        titleView.isSelectable = false
         titleView.delegate = self
         addSubview(titleView)
 
@@ -142,6 +142,8 @@ extension WorkspaceTabListView: NSTextDelegate {
     func textDidChange(_ notification: Notification) {
         if titleView.string.contains("\n") {
             window?.makeFirstResponder(nil)
+            titleView.isEditable = false
+            titleView.isSelectable = false
         }
         workspace.name = titleView.string.replacingOccurrences(of: "\n", with: "")
     }
