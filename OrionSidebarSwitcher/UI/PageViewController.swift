@@ -136,6 +136,9 @@ class PageViewController: NSViewController {
 
 extension PageViewController: NSTextDelegate {
     func textDidChange(_ notification: Notification) {
-        wsGroupManager.currentWorkspaceTab().name = textView.string
+        if textView.string.contains("\n") {
+            view.window?.makeFirstResponder(nil)
+        }
+        wsGroupManager.currentWorkspaceTab().name = textView.string.replacingOccurrences(of: "\n", with: "")
     }
 }

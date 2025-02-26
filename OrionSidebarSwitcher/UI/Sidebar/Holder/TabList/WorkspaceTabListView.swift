@@ -20,7 +20,7 @@ class WorkspaceTabListView: NSView {
     var selectedTabWatcher: AnyCancellable?
 
     /// The text label for the workspace's title
-    var titleView: NSTextField!
+    var titleView: NSText!
     /// The view containing the pinned tabs
     var pinnedTabsView: WorkspacePinnedTabsView!
     /// The view containing the normal tabs
@@ -33,16 +33,14 @@ class WorkspaceTabListView: NSView {
 
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
-        self.titleView = NSTextField()
-        titleView.stringValue = workspace.name
+        self.titleView = NSText()
+        titleView.string = workspace.name
         titleView.textColor = .gray
         titleView.backgroundColor = .clear
-        titleView.isEditable = false
+        titleView.isEditable = true
         titleView.font = .boldSystemFont(ofSize: 12)
-        titleView.isBordered = false
-        titleView.isSelectable = false
-        titleView.lineBreakMode = .byTruncatingMiddle
-        titleView.usesSingleLineMode = true
+        titleView.isSelectable = true
+        titleView.delegate = self
         addSubview(titleView)
 
         self.pinnedTabsView = WorkspacePinnedTabsView()
@@ -67,6 +65,9 @@ class WorkspaceTabListView: NSView {
             pinnedTabsView.updateUIElements()
             normalTabsView.updateUIElements()
         }
+
+        // unfocus the text view
+        window?.makeFirstResponder(nil)
     }
 
     override var isFlipped: Bool { true }
@@ -134,6 +135,15 @@ class WorkspaceTabListView: NSView {
 extension WorkspaceTabListView: TabInteractionDelegate {
     func tabWasPressed(tabId: TabItem.ID) {
         interactionDelegate?.tabWasPressed(tabId: tabId, inWorkspaceId: workspace.id)
+    }
+}
+
+extension WorkspaceTabListView: NSTextDelegate {
+    func textDidChange(_ notification: Notification) {
+        if titleView.string.contains("\n") {
+            window?.makeFirstResponder(nil)
+        }
+        workspace.name = titleView.string.replacingOccurrences(of: "\n", with: "")
     }
 }
 

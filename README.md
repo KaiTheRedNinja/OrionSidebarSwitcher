@@ -20,6 +20,10 @@ Roughly based on the specifications at https://hackmd.io/@kagi/S1hXCgYFkg
     - [x] Indicator for current tab
 - [x] Image in content area which should also be animated while switching workspace.
 - [x] Example workspace data must have some pinned/normal items in sidebar
+- [x] Change workspace icon
+- [x] Change workspace name
+- [x] Change tab icon
+- [x] Change tab name
 
 ## Implementation Details
 
