@@ -11,14 +11,14 @@ Roughly based on the specifications at https://hackmd.io/@kagi/S1hXCgYFkg
     - [x] Add/remove workspace capability and animation
     - [x] Workspace icons collapse to dots when there’s less space available, and animate to full size on hover
     - [x] When theres too many workspace items, scroll
-- [ ] Workspace content holder
+- [x] Workspace content holder
     - [x] Smooth animation while switching to different workspace.
     - [x] Pan gesture to swipe between workspaces.
     - [x] Pinned tabs
-    - [ ] Normal tabs
-    - [ ] Indicator for current tab
+    - [x] Normal tabs
+    - [x] Indicator for current tab
 - [x] Image in content area which should also be animated while switching workspace.
-- [ ] Example workspace data must have some pinned/normal items in sidebar
+- [x] Example workspace data must have some pinned/normal items in sidebar
 
 ## Implementation Details
 
