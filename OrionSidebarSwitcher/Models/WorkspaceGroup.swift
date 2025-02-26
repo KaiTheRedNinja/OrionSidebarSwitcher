@@ -78,7 +78,6 @@ class WorkspaceGroup: Identifiable, ObservableObject {
                         .init(name: "Why do people eat cake?", icon: TabItem.defaultIcon)
                     ]
                 ),
-                .blankWorkspace(),
                 .blankWorkspace()
             ]
         )

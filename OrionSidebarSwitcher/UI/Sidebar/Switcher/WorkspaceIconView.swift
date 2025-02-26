@@ -28,10 +28,10 @@ class WorkspaceIconView: NSView {
     /// The minimum width of a WorkspaceIconView in compact mode
     static let minimumCompactWidth: CGFloat = 16
     /// The minimum width of a WorkspaceIconView before it enters compact mode
-    static let minimumExpandedWidth: CGFloat = 28
+    static let minimumExpandedWidth: CGFloat = 22
     /// The maximum width of a WorkspaceIconView. This is also the distance between the centers
     /// of two consecutive WorkspaceIconViews
-    static let maximumExpandedWidth: CGFloat = 44
+    static let maximumExpandedWidth: CGFloat = 30
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)

@@ -17,7 +17,7 @@ class WorkspacePinnedTabsView: NSView {
     var interactionDelegate: TabInteractionDelegate?
 
     /// How much spacing the contents have between each other
-    var padding: CGFloat = 3
+    var padding: CGFloat = 6
 
     func setup() {
         // create the pinned tab views
@@ -40,7 +40,7 @@ class WorkspacePinnedTabsView: NSView {
         // are 3 colums and 6 items, there are 2 rows. If there are 7, then theres 3.
         let rows = (CGFloat(pinnedTabs.count)/CGFloat(columns)).rounded(.up)
 
-        return rows * PinnedTabView.tabItemHeight
+        return rows * (PinnedTabView.tabItemSize.height + padding)
     }
 
     override func layout() {
@@ -52,7 +52,8 @@ class WorkspacePinnedTabsView: NSView {
     func updateUIElements() {
         guard let pinnedTabs else { return }
 
-        let tabItemPaddedHeight: CGFloat = PinnedTabView.tabItemHeight + padding
+        let tabItemPaddedWidth: CGFloat = PinnedTabView.tabItemSize.width + padding
+        let tabItemPaddedHeight: CGFloat = PinnedTabView.tabItemSize.height + padding
 
         let columns = columnCount(forWidth: frame.width)
         for (index, pinnedTab) in pinnedTabs.enumerated() {
@@ -71,10 +72,11 @@ class WorkspacePinnedTabsView: NSView {
             let column = index%columns
             let row = index/columns
             let targetFrame = CGRect(
-                x: tabItemPaddedHeight * CGFloat(column),
-                y: tabItemPaddedHeight * CGFloat(row),
-                width: PinnedTabView.tabItemHeight,
-                height: PinnedTabView.tabItemHeight
+                origin: .init(
+                    x: tabItemPaddedWidth * CGFloat(column),
+                    y: tabItemPaddedHeight * CGFloat(row)
+                ),
+                size: PinnedTabView.tabItemSize
             )
 
             // move the view to its new position, animating if needed
@@ -96,6 +98,6 @@ class WorkspacePinnedTabsView: NSView {
         // The number of columns is largest whole
         // number of tab items it can fit horizontally
         // we add the padding to the width to account for the last tab's trailing padding
-        Int((width+padding)/(PinnedTabView.tabItemHeight+padding))
+        Int((width+padding)/(PinnedTabView.tabItemSize.width+padding))
     }
 }

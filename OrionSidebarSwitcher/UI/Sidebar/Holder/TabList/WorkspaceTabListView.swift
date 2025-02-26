@@ -29,7 +29,7 @@ class WorkspaceTabListView: NSView {
     /// How much horizontal padding the contents have between the edge of the view
     var horizontalPadding: CGFloat = 10
     /// How much vertical spacing the contents have between each other
-    var verticalSpacing: CGFloat = 12
+    var verticalSpacing: CGFloat = 6
 
     /// Sets up the workspace group holder's UI and listeners
     func setup() {
