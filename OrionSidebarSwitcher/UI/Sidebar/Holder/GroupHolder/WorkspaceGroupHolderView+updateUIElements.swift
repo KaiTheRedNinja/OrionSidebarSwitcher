@@ -67,7 +67,7 @@ extension WorkspaceGroupHolderView {
         let focusedTabViewFrame = self.bounds
 
         // --- 2. Execute the actions ---
-        let (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan) = executeActions(
+        let (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan, isPanning) = executeActions(
             currentWorkspaceId: uiState.shownWorkspaceItem,
             actions: actions,
             panHorizontalOffset: panHorizontalOffset,
@@ -122,7 +122,8 @@ extension WorkspaceGroupHolderView {
         animateOutOldView(
             currentWorkspaceView: currentWorkspaceView,
             oldWorkspaceFrame: oldWorkspaceFrame,
-            workspacesToRemove: workspacesToRemove
+            workspacesToRemove: workspacesToRemove,
+            animate: isPanning
         )
 
         // ----- c. Add the new workspace to this view, then animate it in -----
@@ -132,7 +133,8 @@ extension WorkspaceGroupHolderView {
         animateInNewView(
             workspaceToShowView: workspaceToShowView,
             newWorkspaceFrame: newWorkspaceFrame,
-            focusedTabViewFrame: focusedTabViewFrame
+            focusedTabViewFrame: focusedTabViewFrame,
+            animate: isPanning
         )
 
         // ----- d. Delete views that are to be deleted, and are currently not shown -----
@@ -151,12 +153,14 @@ extension WorkspaceGroupHolderView {
         workspaceToShow: Workspace.ID?,
         workspaceToPreview: Workspace.ID?,
         workspacesToRemove: Set<Workspace.ID>,
-        isResettingFromPan: Bool
+        isResettingFromPan: Bool,
+        isPanning: Bool
     ) {
         var workspaceToShow = currentWorkspaceId
         var workspaceToPreview: Workspace.ID?
         var workspacesToRemove: Set<Workspace.ID> = []
         var isResettingFromPan: Bool = false
+        var isPanning: Bool = false
 
         for action in actions {
             switch action {
@@ -171,6 +175,8 @@ extension WorkspaceGroupHolderView {
                 tabListView.setup()
                 tabListViews.append(tabListView)
             case .panning:
+                isPanning = true
+
                 // add the views for the workspaces to the left/right of the current workspace
                 guard let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == currentWorkspaceId }),
                       let panHorizontalOffset
@@ -188,7 +194,7 @@ extension WorkspaceGroupHolderView {
                 isResettingFromPan = true
             }
         }
-        return (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan)
+        return (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan, isPanning)
     }
 
     private func processPan(
@@ -305,9 +311,19 @@ extension WorkspaceGroupHolderView {
     private func animateOutOldView(
         currentWorkspaceView: WorkspaceTabListView?,
         oldWorkspaceFrame: CGRect,
-        workspacesToRemove: Set<Workspace.ID>
+        workspacesToRemove: Set<Workspace.ID>,
+        animate: Bool
     ) {
         guard let currentWorkspaceView else { return }
+
+        guard animate else { // just remove it right away
+            currentWorkspaceView.removeFromSuperview()
+            // if its to be removed, remove it completely
+            if workspacesToRemove.contains(currentWorkspaceView.workspace.id) {
+                tabListViews.removeAll { $0.workspace.id == currentWorkspaceView.workspace.id }
+            }
+            return
+        }
 
         // Animate out the old workspace
         NSAnimationContext.runAnimationGroup { context in
@@ -329,13 +345,19 @@ extension WorkspaceGroupHolderView {
     private func animateInNewView(
         workspaceToShowView: WorkspaceTabListView,
         newWorkspaceFrame: CGRect,
-        focusedTabViewFrame: CGRect
+        focusedTabViewFrame: CGRect,
+        animate: Bool
     ) {
         // animate in the workspace to show
         // Add the new workspace to this view, out of frame, if it isn't already
         if workspaceToShowView.superview == nil {
             workspaceToShowView.frame = newWorkspaceFrame
             addSubview(workspaceToShowView)
+        }
+
+        guard animate else {
+            workspaceToShowView.frame = focusedTabViewFrame
+            return
         }
 
         // Animate in the new workspace
