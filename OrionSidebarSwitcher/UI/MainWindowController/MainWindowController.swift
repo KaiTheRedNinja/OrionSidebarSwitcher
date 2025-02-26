@@ -63,6 +63,11 @@ class MainWindowController: NSWindowController {
         // has been passed to them
         self.sidebarViewController.setup()
         self.pageViewController.setup()
+
+        // unfocus the default focused text field
+        DispatchQueue.main.async {
+            self.window?.makeFirstResponder(nil)
+        }
     }
 
     @objc

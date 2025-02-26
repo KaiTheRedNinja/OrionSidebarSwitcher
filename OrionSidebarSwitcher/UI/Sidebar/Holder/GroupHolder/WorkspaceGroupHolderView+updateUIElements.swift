@@ -67,7 +67,7 @@ extension WorkspaceGroupHolderView {
         let focusedTabViewFrame = self.bounds
 
         // --- 2. Execute the actions ---
-        let (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan, isPanning) = executeActions(
+        let (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan) = executeActions(
             currentWorkspaceId: uiState.shownWorkspaceItem,
             actions: actions,
             panHorizontalOffset: panHorizontalOffset,
@@ -117,13 +117,12 @@ extension WorkspaceGroupHolderView {
             workspaceToShowIndex: workspaceToShowIndex,
             focusedTabViewFrame: focusedTabViewFrame
         )
-
         // ----- b. Animate out the old workspace, then remove it from this view -----
         animateOutOldView(
             currentWorkspaceView: currentWorkspaceView,
             oldWorkspaceFrame: oldWorkspaceFrame,
             workspacesToRemove: workspacesToRemove,
-            animate: isPanning
+            animate: panHorizontalOffset == nil
         )
 
         // ----- c. Add the new workspace to this view, then animate it in -----
@@ -134,7 +133,7 @@ extension WorkspaceGroupHolderView {
             workspaceToShowView: workspaceToShowView,
             newWorkspaceFrame: newWorkspaceFrame,
             focusedTabViewFrame: focusedTabViewFrame,
-            animate: isPanning
+            animate: panHorizontalOffset == nil
         )
 
         // ----- d. Delete views that are to be deleted, and are currently not shown -----
@@ -153,14 +152,12 @@ extension WorkspaceGroupHolderView {
         workspaceToShow: Workspace.ID?,
         workspaceToPreview: Workspace.ID?,
         workspacesToRemove: Set<Workspace.ID>,
-        isResettingFromPan: Bool,
-        isPanning: Bool
+        isResettingFromPan: Bool
     ) {
         var workspaceToShow = currentWorkspaceId
         var workspaceToPreview: Workspace.ID?
         var workspacesToRemove: Set<Workspace.ID> = []
         var isResettingFromPan: Bool = false
-        var isPanning: Bool = false
 
         for action in actions {
             switch action {
@@ -175,7 +172,6 @@ extension WorkspaceGroupHolderView {
                 tabListView.setup()
                 tabListViews.append(tabListView)
             case .panning:
-                isPanning = true
 
                 // add the views for the workspaces to the left/right of the current workspace
                 guard let currentWorkspaceIndex = workspaces.firstIndex(where: { $0.id == currentWorkspaceId }),
@@ -194,7 +190,7 @@ extension WorkspaceGroupHolderView {
                 isResettingFromPan = true
             }
         }
-        return (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan, isPanning)
+        return (workspaceToShow, workspaceToPreview, workspacesToRemove, isResettingFromPan)
     }
 
     private func processPan(

@@ -26,7 +26,7 @@ class WorkspaceIconView: NSView {
     private var dotView: CircleView!
 
     /// The minimum width of a WorkspaceIconView in compact mode
-    static let minimumCompactWidth: CGFloat = 16
+    static let minimumCompactWidth: CGFloat = 18
     /// The minimum width of a WorkspaceIconView before it enters compact mode
     static let minimumExpandedWidth: CGFloat = 22
     /// The maximum width of a WorkspaceIconView. This is also the distance between the centers
