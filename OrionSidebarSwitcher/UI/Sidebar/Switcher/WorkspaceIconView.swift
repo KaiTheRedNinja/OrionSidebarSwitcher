@@ -99,20 +99,46 @@ class WorkspaceIconView: NSView {
         interactionDelegate?.workspaceIconMouseClicked(workspace.id)
     }
 
-    override func rightMouseUp(with event: NSEvent) {
+    override func menu(for event: NSEvent) -> NSMenu? {
         let menu = NSMenu()
+
         let deleteItem = NSMenuItem()
         deleteItem.image = .trash
-        deleteItem.title = "Delete"
+        deleteItem.title = "Delete \"\(workspace.name)\""
         deleteItem.action = #selector(deleteWorkspace)
         deleteItem.target = self
         menu.items.append(deleteItem)
-        menu.popUp(positioning: nil, at: .zero, in: self)
+
+        let switchIconsSubmenu = NSMenu()
+        for image in NSImage.tabIconOptions {
+            let imageItem = NSMenuItem()
+            imageItem.image = image
+            imageItem.title = "Switch Icon"
+            imageItem.action = #selector(switchIcon(_:))
+            imageItem.target = self
+            switchIconsSubmenu.items.append(imageItem)
+        }
+
+        let switchItem = NSMenuItem()
+        switchItem.image = workspace.icon
+        switchItem.title = "Switch workspace icon"
+        switchItem.submenu = switchIconsSubmenu
+        menu.items.append(switchItem)
+
+        return menu
     }
 
     @objc
     func deleteWorkspace() {
         interactionDelegate?.workspaceDeleteRequested(workspace.id)
+    }
+
+    @objc
+    func switchIcon(_ sender: Any?) {
+        guard let sender = sender as? NSMenuItem, let image = sender.image else { return }
+
+        // set the icon
+        workspace.icon = image
     }
 
     // MARK: Layout
