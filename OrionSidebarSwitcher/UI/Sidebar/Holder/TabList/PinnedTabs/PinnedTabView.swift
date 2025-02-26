@@ -53,11 +53,8 @@ class PinnedTabView: NSView {
     }
 
     func updateUIElements() {
-        if isSelected {
-            layer?.backgroundColor = NSColor.controlAccentColor.cgColor.copy(alpha: 0.5)
-        } else {
-            layer?.backgroundColor = NSColor.gray.cgColor.copy(alpha: 0.2)
-        }
+        // we use a more prominent gray to show a selected item
+        layer?.backgroundColor = NSColor.gray.cgColor.copy(alpha: isSelected ? 0.4 : 0.1)
     }
 
     override func mouseUp(with event: NSEvent) {

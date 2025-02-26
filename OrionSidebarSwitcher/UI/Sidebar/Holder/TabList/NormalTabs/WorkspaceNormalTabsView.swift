@@ -15,7 +15,7 @@ class WorkspaceNormalTabsView: NSScrollView, NSOutlineViewDataSource, NSOutlineV
     /// Setup the ``scrollView`` and ``outlineView``
     func setup() {
         // create an outlineview without a header
-        self.outlineView = NSOutlineView()
+        self.outlineView = UnfocusableOutlineView()
         outlineView.headerView = nil
         outlineView.dataSource = self
         outlineView.delegate = self
@@ -81,4 +81,9 @@ class WorkspaceNormalTabsView: NSScrollView, NSOutlineViewDataSource, NSOutlineV
     func outlineViewSelectionDidChange(_ notification: Notification) {
         print("Selection changed!")
     }
+}
+
+/// Makes the selection gray
+class UnfocusableOutlineView: NSOutlineView {
+    override var acceptsFirstResponder: Bool { false }
 }
