@@ -227,7 +227,6 @@ extension WorkspaceSwitcherView {
 
             // If it is to be removed: Animate its frame changing to 0, then remove it
             guard !workspacesToRemove.contains(workspaceId) else {
-                // TODO: animate the view to zero
                 workspaceIconView.removeFromSuperview()
                 if let index = workspaceIconViews.firstIndex(of: workspaceIconView) {
                     workspaceIconViews.remove(at: index)
